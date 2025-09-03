@@ -1,0 +1,48 @@
+﻿@{
+	ViewData["Title"] = "Sign Up";
+}
+
+<div class="d-flex justify-content-center align-items-center vh-100"
+		 style="background: linear-gradient(to right, #fbc2eb, #a6c1ee);">
+	<div class="card shadow-lg p-4 rounded-4 border-0" style="width: 450px;">
+		<div class="text-center mb-4">
+			<i class="fa-solid fa-user-plus fa-3x" style="color:#2196f3;"></i>
+			<h3 class="fw-bold mt-2 text-dark">Create Account</h3>
+			<p class="text-muted">Join us and start shopping today</p>
+		</div>
+
+		<form>
+			<div class="mb-3">
+				<label class="form-label fw-semibold">Full Name</label>
+				<input type="text" class="form-control rounded-pill" placeholder="Enter your name">
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label fw-semibold">Email</label>
+				<input type="email" class="form-control rounded-pill" placeholder="Enter your email">
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label fw-semibold">Password</label>
+				<input type="password" class="form-control rounded-pill" placeholder="Enter your password">
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label fw-semibold">Confirm Password</label>
+				<input type="password" class="form-control rounded-pill" placeholder="Confirm your password">
+			</div>
+
+			<button type="submit"
+							class="btn w-100 rounded-pill fw-bold text-white"
+							style="background: linear-gradient(to right, #36d1dc, #5b86e5);">
+				Sign Up
+			</button>
+		</form>
+
+		<p class="text-center mt-3">
+			Already have an account?
+			<a asp-controller="Account" asp-action="Login"
+				 class="fw-bold text-decoration-none" style="color:#ff4081;">Login</a>
+		</p>
+	</div>
+</div>

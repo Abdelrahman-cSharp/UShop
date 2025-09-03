@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "UShop - Home";
+}
+
+<div class="container mt-5">
+    @* <!-- Hero Section -->
+    <div class="p-5 mb-5 text-center text-white rounded shadow-lg" style="background: linear-gradient(90deg, #ff6a00, #ee0979);">
+        <h1 class="display-3 fw-bold">🛒 Welcome to <span style="color: #ffd700;">UShop</span></h1>
+        <p class="lead">Your one-stop shop for trendy, stylish, and affordable products.</p>
+        <a class="btn btn-warning btn-lg me-2 fw-bold shadow" href="/Products">✨ Shop Now</a>
+        <a class="btn btn-light btn-lg fw-bold shadow" href="/Account/Login">Sign In</a>
+    </div> *@
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Welcome to UShop 🛍️</h1>
+        <p>Discover amazing products at unbeatable prices.</p>
+        <a class="btn btn-ushop" asp-controller="Products" asp-action="Index">Shop Now</a>
+    </div>
+
+    <!-- Categories Section -->
+    <h2 class="text-center mt-5 mb-4 fw-bold text-primary">Browse by Category</h2>
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-lg" style="background: #e0f7fa;">
+                <img src="~/images/electronics.jpg" class="card-img-top" alt="Electronics">
+                <div class="card-body">
+                    <h5 class="card-title text-info fw-bold">Electronics</h5>
+                    <p class="card-text">Latest gadgets, mobiles, and accessories.</p>
+                    <a href="/Products?category=Electronics" class="btn btn-info text-white fw-bold">Explore</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-lg" style="background: #fff3e0;">
+                <img src="~/images/fashion.jpg" class="card-img-top" alt="Fashion">
+                <div class="card-body">
+                    <h5 class="card-title text-warning fw-bold">Fashion</h5>
+                    <p class="card-text">Trendy clothes and stylish accessories.</p>
+                    <a href="/Products?category=Fashion" class="btn btn-warning text-dark fw-bold">Explore</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-lg" style="background: #f3e5f5;">
+                <img src="~/images/home.jpg" class="card-img-top" alt="Home & Living">
+                <div class="card-body">
+                    <h5 class="card-title text-purple fw-bold">Home & Living</h5>
+                    <p class="card-text">Everything you need for your home comfort.</p>
+                    <a href="/Products?category=Home" class="btn btn-purple text-white fw-bold" style="background:#8e24aa;">Explore</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Products -->
+    <h2 class="text-center mt-5 mb-4 fw-bold text-success">🌟 Featured Products</h2>
+    <div class="row text-center">
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-lg">
+                <span class="badge bg-danger position-absolute mt-2 ms-2">Sale</span>
+                <img src="~/images/product1.jpg" class="card-img-top" alt="Product 1">
+                <div class="card-body">
+                    <h5 class="card-title">Wireless Headphones</h5>
+                    <p class="card-text text-success fw-bold">$49.99</p>
+                    <a href="/Products/Details/1" class="btn btn-success fw-bold">Buy Now</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-lg">
+                <span class="badge bg-primary position-absolute mt-2 ms-2">Hot</span>
+                <img src="~/images/product2.jpg" class="card-img-top" alt="Product 2">
+                <div class="card-body">
+                    <h5 class="card-title">Smart Watch</h5>
+                    <p class="card-text text-primary fw-bold">$79.99</p>
+                    <a href="/Products/Details/2" class="btn btn-primary fw-bold">Buy Now</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-lg">
+                <span class="badge bg-warning text-dark position-absolute mt-2 ms-2">New</span>
+                <img src="~/images/product3.jpg" class="card-img-top" alt="Product 3">
+                <div class="card-body">
+                    <h5 class="card-title">Casual Shoes</h5>
+                    <p class="card-text text-warning fw-bold">$29.99</p>
+                    <a href="/Products/Details/3" class="btn btn-warning text-dark fw-bold">Buy Now</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 shadow-lg">
+                <span class="badge bg-success position-absolute mt-2 ms-2">Best</span>
+                <img src="~/images/product4.jpg" class="card-img-top" alt="Product 4">
+                <div class="card-body">
+                    <h5 class="card-title">Gaming Laptop</h5>
+                    <p class="card-text text-danger fw-bold">$999.99</p>
+                    <a href="/Products/Details/4" class="btn btn-danger fw-bold">Buy Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
