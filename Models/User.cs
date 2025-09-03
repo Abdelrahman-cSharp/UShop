@@ -8,9 +8,9 @@ namespace UShop.Models
 		[Required]
 		public UserType UserType { get; set; } // Admin or Customer
 
-		// Navigation properties
-		public int? AdminId { get; set; }
-		public int? CustomerId { get; set; }
-		public int? SellerId { get; set; }
+		//// Navigation properties
+		//public int? AdminId { get; set; }
+		//public int? CustomerId { get; set; }
+		//public int? SellerId { get; set; }
 	}
 }

@@ -26,7 +26,7 @@ namespace UShop.Models
 		[Column(TypeName = "decimal(18,2)")]
 		public decimal UnitPrice { get; set; }
 
-		[NotMapped]
+		//[NotMapped]
 		public decimal TotalPrice => Quantity * UnitPrice;
 	}
 }
