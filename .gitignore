@@ -11,6 +11,8 @@
 [Ll]og/
 [Tt]emp/
 TestResults/
+obj/
+
 
 # Visual Studio profiler
 *.psess
