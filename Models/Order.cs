@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UShop.Domain.Entities
+namespace UShop.Models
 {
 	public class Order
 	{
 		[Key]
-		public int OrderId { get; set; }
+		public int Id { get; set; }
 
 		[Required]
 		public int CustomerId { get; set; }
@@ -19,7 +16,7 @@ namespace UShop.Domain.Entities
 		public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
 		[Required, MaxLength(50)]
-		public string Status { get; set; } = "Pending";
+		public OrderStatus Status { get; set; } = OrderStatus.Pending;
 		// e.g., Pending, Processing, Shipped, Delivered
 		public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 

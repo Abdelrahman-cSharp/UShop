@@ -13,22 +13,22 @@ namespace UshopFront.Controllers
 
 		// POST: /Account/Login
 		[HttpPost]
+		[ValidateAntiForgeryToken]
 		public IActionResult Login(Login model)
 		{
-			if (string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Password))
+			if (!ModelState.IsValid)
 			{
-				ViewBag.Error = "FullName and Password are required.";
 				return View(model);
 			}
 
 			// Placeholder login check
-			if (model.FullName == "admin" && model.Password == "123")
+			if (model.Email == "admin@example.com" && model.Password == "123")
 			{
 				TempData["Message"] = "Login successful!";
 				return RedirectToAction("Index", "Home");
 			}
 
-			ViewBag.Error = "Invalid login credentials.";
+			ModelState.AddModelError(string.Empty, "Invalid login credentials.");
 			return View(model);
 		}
 
@@ -40,13 +40,11 @@ namespace UshopFront.Controllers
 
 		// POST: /Account/Register
 		[HttpPost]
+		[ValidateAntiForgeryToken]
 		public IActionResult Register(Register model)
 		{
-			if (string.IsNullOrEmpty(model.FullName) ||
-				 string.IsNullOrEmpty(model.Password) ||
-				 string.IsNullOrEmpty(model.Email))
+			if (!ModelState.IsValid)
 			{
-				ViewBag.Error = "All fields are required.";
 				return View(model);
 			}
 

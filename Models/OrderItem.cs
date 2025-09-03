@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace UShop.Domain.Entities
+namespace UShop.Models
 {
 	public class OrderItem
 	{
 		[Key]
-		public int OrderItemId { get; set; }
+		public int Id { get; set; }
 
 		[Required]
 		public int OrderId { get; set; }
@@ -21,9 +21,10 @@ namespace UShop.Domain.Entities
 		public int Quantity { get; set; }
 
 		[Required]
+		[Column(TypeName = "decimal(18,2)")]
 		public decimal UnitPrice { get; set; }
 
 		[NotMapped]
-		public decimal Subtotal => Quantity * UnitPrice;
+		public decimal TotalPrice => Quantity * UnitPrice;
 	}
 }
