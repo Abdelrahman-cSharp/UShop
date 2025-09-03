@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
@@ -22,11 +23,16 @@ namespace UShop.Models
 
 		public string? ImageUrl { get; set; }
 
-		public int SellerId { get; set; }
 		[Required]
-		public Seller Seller { get; set; }
+		public int SellerId { get; set; }
+		[ValidateNever]
+		public Seller? Seller { get; set; }
 
+		[Required]
 		public int CategoryId { get; set; }
+		[ValidateNever]
 		public Category? Category { get; set; }
+
+		public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 	}
 }

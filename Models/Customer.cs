@@ -21,6 +21,7 @@ namespace UShop.Models
 		public string? Address { get; set; }
 
 		// Relationships
+
 		public ICollection<Order> Orders { get; set; } = new List<Order>();
 	}
 }
