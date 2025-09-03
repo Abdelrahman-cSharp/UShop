@@ -12,7 +12,9 @@
 [Tt]emp/
 TestResults/
 obj/
-
+bin/
+log/
+temp/
 
 # Visual Studio profiler
 *.psess
