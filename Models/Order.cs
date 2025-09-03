@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
@@ -22,7 +23,7 @@ namespace UShop.Models
 		// e.g., Pending, Processing, Shipped, Delivered
 		public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
-		//[NotMapped]
+		[NotMapped]
 		public decimal TotalAmount => OrderItems.Sum(item => item.Quantity * item.UnitPrice);
 	}
 }
