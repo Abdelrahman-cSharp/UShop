@@ -1,0 +1,108 @@
+﻿@model IEnumerable<UShop.Models.Order>
+@{
+	ViewData["Title"] = "My Orders";
+}
+
+<h2 class="mb-4 text-center text-dark">My Orders 🛒</h2>
+
+@* Display Success/Error Messages *@
+@if (TempData["Success"] != null)
+{
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		<strong>✅ Success!</strong> @TempData["Success"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+@if (TempData["Error"] != null)
+{
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+		<strong>❌ Error!</strong> @TempData["Error"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+@* --- In-Progress Orders Section --- *@
+<div class="p-3 mb-4 rounded-4" style="background: linear-gradient(135deg, #fff4e6, #ffe7cc);">
+	<h3 class="mb-3 text-dark">📦 In Progress Orders</h3>
+	<div class="row">
+		@foreach (var order in Model.Where(o => o.Status == UShop.Models.OrderStatus.Pending
+				|| o.Status == UShop.Models.OrderStatus.Processing
+				|| o.Status == UShop.Models.OrderStatus.Shipped))
+		{
+			<div class="col-sm-6 col-md-4 mb-4">
+				<div class="card rounded-3 shadow-sm border-0" style="background: #fff9f0;">
+					<div class="card-body">
+						<h5 class="card-title text-dark">Order #@order.Id</h5>
+						<p class="text-muted mb-1"><strong>Customer:</strong> @order.Customer?.FullName</p>
+						<p class="text-muted mb-1"><strong>Date:</strong> @order.OrderDate.ToString("dd/MM/yyyy")</p>
+						<p class="text-muted mb-1"><strong>Status:</strong> <span class="badge bg-info text-dark">@order.Status</span></p>
+						<p class="fw-bold text-dark">Total: @order.TotalAmount.ToString("C")</p>
+						<div class="d-flex flex-wrap mb-3">
+							@foreach (var item in order.Items.Take(2))
+							{
+								<div class="me-2 mb-2 text-center">
+									<img src="@item.Product?.ImageUrl"
+											 alt="@item.Product?.Name"
+											 class="rounded"
+											 style="width:60px; height:60px; object-fit:cover; border:1px solid #ddd;" />
+									<div style="font-size:0.8rem;">@item.Product?.Name</div>
+								</div>
+							}
+							@if (order.Items.Count > 2)
+							{
+								<span class="text-muted" style="font-size:0.9rem;">+ @((order.Items.Count - 2)) more</span>
+							}
+						</div>
+						<a asp-action="Details" asp-route-id="@order.Id" class="btn btn-gradient-primary btn-sm">View Details</a>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+</div>
+
+@* --- Completed Orders Section --- *@
+<div class="p-3 mb-5 rounded-4" style="background: linear-gradient(135deg, #e6f9ff, #ccf0ff);">
+	<h3 class="mb-3 text-dark">✅ Completed Orders</h3>
+	<div class="row">
+		@foreach (var order in Model.Where(o => o.Status == UShop.Models.OrderStatus.Delivered
+				|| o.Status == UShop.Models.OrderStatus.Cancelled))
+		{
+			<div class="col-sm-6 col-md-4 mb-4">
+				<div class="card rounded-3 shadow-sm border-0"
+						 style="background: @(order.Status == UShop.Models.OrderStatus.Delivered ? "#e6ffe6" : "#f0f0f0");">
+					<div class="card-body">
+						<h5 class="card-title text-dark">Order #@order.Id</h5>
+						<p class="text-muted mb-1"><strong>Customer:</strong> @order.Customer?.FullName</p>
+						<p class="text-muted mb-1"><strong>Date:</strong> @order.OrderDate.ToString("dd/MM/yyyy")</p>
+						<p class="text-muted mb-1">
+							<strong>Status:</strong>
+							<span class="badge @(order.Status == UShop.Models.OrderStatus.Delivered ? "bg-success" : "bg-secondary") text-dark">
+								@order.Status
+							</span>
+						</p>
+						<p class="fw-bold text-dark">Total: @order.TotalAmount.ToString("C")</p>
+						<div class="d-flex flex-wrap mb-3">
+							@foreach (var item in order.Items.Take(2))
+							{
+								<div class="me-2 mb-2 text-center">
+									<img src="@item.Product?.ImageUrl"
+											 alt="@item.Product?.Name"
+											 class="rounded"
+											 style="width:60px; height:60px; object-fit:cover; border:1px solid #ddd;" />
+									<div style="font-size:0.8rem;">@item.Product?.Name</div>
+								</div>
+							}
+							@if (order.Items.Count > 2)
+							{
+								<span class="text-muted" style="font-size:0.9rem;">+ @((order.Items.Count - 2)) more</span>
+							}
+						</div>
+						<a asp-action="Details" asp-route-id="@order.Id" class="btn btn-gradient-primary btn-sm">View Details</a>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+</div>
