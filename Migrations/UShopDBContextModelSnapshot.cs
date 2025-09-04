@@ -178,6 +178,25 @@ namespace UShop.Migrations
                     b.ToTable("Admins");
                 });
 
+            modelBuilder.Entity("UShop.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("Carts");
+                });
+
             modelBuilder.Entity("UShop.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -198,6 +217,44 @@ namespace UShop.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("UShop.Models.CreditCard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CVV")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CardholderName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExpiryMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExpiryYear")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("CreditCards");
                 });
 
             modelBuilder.Entity("UShop.Models.Customer", b =>
@@ -231,6 +288,40 @@ namespace UShop.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("UShop.Models.Item", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CartId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Items");
+                });
+
             modelBuilder.Entity("UShop.Models.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -245,6 +336,9 @@ namespace UShop.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -253,35 +347,6 @@ namespace UShop.Migrations
                     b.HasIndex("CustomerId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("UShop.Models.OrderItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("UShop.Models.Product", b =>
@@ -471,6 +536,53 @@ namespace UShop.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UShop.Models.Cart", b =>
+                {
+                    b.HasOne("UShop.Models.Customer", "Customer")
+                        .WithOne("Cart")
+                        .HasForeignKey("UShop.Models.Cart", "CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("UShop.Models.CreditCard", b =>
+                {
+                    b.HasOne("UShop.Models.Customer", "Customer")
+                        .WithOne("CreditCards")
+                        .HasForeignKey("UShop.Models.CreditCard", "CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("UShop.Models.Item", b =>
+                {
+                    b.HasOne("UShop.Models.Cart", "Cart")
+                        .WithMany("Items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UShop.Models.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("UShop.Models.Product", "Product")
+                        .WithMany("Items")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("UShop.Models.Order", b =>
                 {
                     b.HasOne("UShop.Models.Customer", "Customer")
@@ -480,25 +592,6 @@ namespace UShop.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("UShop.Models.OrderItem", b =>
-                {
-                    b.HasOne("UShop.Models.Order", "Order")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UShop.Models.Product", "Product")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("UShop.Models.Product", b =>
@@ -520,6 +613,11 @@ namespace UShop.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("UShop.Models.Cart", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("UShop.Models.Category", b =>
                 {
                     b.Navigation("Products");
@@ -527,17 +625,21 @@ namespace UShop.Migrations
 
             modelBuilder.Entity("UShop.Models.Customer", b =>
                 {
+                    b.Navigation("Cart");
+
+                    b.Navigation("CreditCards");
+
                     b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("UShop.Models.Order", b =>
                 {
-                    b.Navigation("OrderItems");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("UShop.Models.Product", b =>
                 {
-                    b.Navigation("OrderItems");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("UShop.Models.Seller", b =>

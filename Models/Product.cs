@@ -16,7 +16,7 @@ namespace UShop.Models
 		[MaxLength(500)]
 		public string? Description { get; set; }
 
-		[Column(TypeName = "decimal(18,2)")] 
+		[Column(TypeName = "decimal(18,2)")]
 		public decimal Price { get; set; }
 
 		public int StockQuantity { get; set; }
@@ -33,6 +33,6 @@ namespace UShop.Models
 		[ValidateNever]
 		public Category? Category { get; set; }
 
-		public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+		public ICollection<Item> Items { get; set; } = new List<Item>();
 	}
 }

@@ -23,11 +23,8 @@ namespace UShop.Models
 		public string? Address { get; set; }
 
 		// Relationships
-		[Required]
-		public int CartId { get; set; }
 		[ValidateNever]
-		public Order? Cart { get; set; }
-
+		public Cart? Cart { get; set; }
 
 		[ValidateNever]
 		public CreditCard? CreditCards { get; set; }

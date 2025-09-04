@@ -4,27 +4,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
-	public class Order
+	public class Cart
 	{
 		[Key]
 		public int Id { get; set; }
 
-		[Required]
+		[Required, ForeignKey("Customer")]  
 		public int CustomerId { get; set; }
 
 		[ValidateNever]
 		public Customer? Customer { get; set; }
 
-		[Required]
-		public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-
-		public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.CashOnDelivery;
-
-		[Required]
-		public OrderStatus Status { get; set; } = OrderStatus.Pending;
-		// e.g., Pending, Processing, Shipped, Delivered
 		public ICollection<Item> Items { get; set; } = new List<Item>();
-		
+
 		[NotMapped]
 		public decimal TotalAmount => Items.Sum(item => item.Quantity * item.UnitPrice);
 	}

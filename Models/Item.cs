@@ -4,15 +4,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
-	public class OrderItem
+	public class Item
 	{
 		[Key]
 		public int Id { get; set; }
 
-		[Required]
-		public int OrderId { get; set; }
+		public int? OrderId { get; set; }
 		[ValidateNever]
 		public Order? Order { get; set; }
+
+		public int? CartId { get; set; }
+		[ValidateNever]
+		public Cart? Cart { get; set; }
 
 		[Required]
 		public int ProductId { get; set; }
