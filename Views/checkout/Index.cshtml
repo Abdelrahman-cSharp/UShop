@@ -1,0 +1,166 @@
+﻿@{
+    ViewData["Title"] = "Checkout";
+}
+@model UShop.Models.Order
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="hero mb-4">
+            <h1 class="display-4">Secure Checkout</h1>
+            <p class="lead">Please fill out your details to complete your order.</p>
+        </div>
+
+        <div class="card shadow-lg p-4">
+            <h2 class="card-title text-center mb-4" style="color: #ff6f61;">Your Order Details</h2>
+            <form asp-action="Place" asp-controller="Checkout" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="card-body">
+                    <h4 class="card-subtitle mb-3 text-muted">Customer Information</h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Customer.FullName" class="form-label">Full Name</label>
+                            <input asp-for="Customer.FullName" class="form-control" />
+                            <span asp-validation-for="Customer.FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Customer.Email" class="form-label">Email</label>
+                            <input asp-for="Customer.Email" class="form-control" />
+                            <span asp-validation-for="Customer.Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Customer.PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="Customer.PhoneNumber" class="form-control" />
+                            <span asp-validation-for="Customer.PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Customer.Address" class="form-label">Address</label>
+                            <input asp-for="Customer.Address" class="form-control" />
+                            <span asp-validation-for="Customer.Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body mt-4">
+                    <h4 class="card-subtitle mb-3 text-muted">Order Summary</h4>
+                    @if (Model.Items != null && Model.Items.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.Product?.Name</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice.ToString("C")</td>
+                                        <td>@item.TotalPrice.ToString("C")</td>
+                                        <input type="hidden" name="order.OrderItems[@Model.Items.ToList().IndexOf(item)].ProductId" value="@item.ProductId" />
+                                        <input type="hidden" name="order.OrderItems[@Model.Items.ToList().IndexOf(item)].Quantity" value="@item.Quantity" />
+                                        <input type="hidden" name="order.OrderItems[@Model.Items.ToList().IndexOf(item)].UnitPrice" value="@item.UnitPrice" />
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Grand Total:</td>
+                                    <td class="fw-bold">@Model.Items.Sum(i => i.TotalPrice).ToString("C")</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Your cart is empty. Please add items before checking out.</p>
+                    }
+                </div>
+
+                <div class="card-body mt-4">
+                    <h4 class="card-subtitle mb-3 text-muted">Payment Method</h4>
+                    <div class="form-group mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="@((int)PaymentMethod.CashOnDelivery)" id="paymentCashOnDelivery" checked />
+                            <label class="form-check-label" for="paymentCashOnDelivery">
+                                Cash on Delivery
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" asp-for="PaymentMethod" value="@((int)PaymentMethod.CreditCard)" id="paymentCreditCard" />
+                            <label class="form-check-label" for="paymentCreditCard">
+                                Credit Card
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="creditCardDetails" style="display: none;">
+                        <hr />
+                        <h5 class="mt-4 mb-3" style="color: #ff6f61;">Credit Card Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label for="creditCard_CardNumber" class="form-label">Card Number</label>
+                                <input name="creditCard.CardNumber" id="creditCard_CardNumber" class="form-control" />
+                                <span asp-validation-for="Customer.CreditCard.CardNumber" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="creditCard_CardholderName" class="form-label">Cardholder Name</label>
+                                <input name="creditCard.CardholderName" id="creditCard_CardholderName" class="form-control" />
+                                <span asp-validation-for="Customer.CreditCard.CardholderName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="creditCard_ExpiryMonth" class="form-label">Expiry Month</label>
+                                <input name="creditCard.ExpiryMonth" id="creditCard_ExpiryMonth" class="form-control" />
+                                <span asp-validation-for="Customer.CreditCard.ExpiryMonth" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="creditCard_ExpiryYear" class="form-label">Expiry Year</label>
+                                <input name="creditCard.ExpiryYear" id="creditCard_ExpiryYear" class="form-control" />
+                                <span asp-validation-for="Customer.CreditCard.ExpiryYear" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="creditCard_CVV" class="form-label">CVV</label>
+                                <input name="creditCard.CVV" id="creditCard_CVV" class="form-control" />
+                                <span asp-validation-for="Customer.CreditCard.CVV" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-ushop btn-lg">Place Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            var creditCardRadio = $('#paymentCreditCard');
+            var cashOnDeliveryRadio = $('#paymentCashOnDelivery');
+            var creditCardDetails = $('#creditCardDetails');
+
+            function toggleCreditCardFields() {
+                if (creditCardRadio.is(':checked')) {
+                    creditCardDetails.show();
+                } else {
+                    creditCardDetails.hide();
+                }
+            }
+
+            toggleCreditCardFields();
+            creditCardRadio.on('change', toggleCreditCardFields);
+            cashOnDeliveryRadio.on('change', toggleCreditCardFields);
+        });
+    </script>
+}
