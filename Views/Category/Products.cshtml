@@ -1,0 +1,27 @@
+﻿@model UShop.Models.Category
+
+<h2>Products in @Model.Name</h2>
+
+@if (Model.Products.Any())
+{
+    <div class="row">
+        @foreach (var product in Model.Products)
+        {
+            <div class="col-md-3">
+                <div class="card">
+                    <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" />
+                    <div class="card-body">
+                        <h5>@product.Name</h5>
+                        <p>@product.Price.ToString("C")</p>
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="btn btn-primary">Details</a>
+                        <a asp-controller="Cart" asp-action="AddToCart" asp-route-id="@product.Id" class="btn btn-success">Add to Cart</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No products found in this category.</p>
+}
