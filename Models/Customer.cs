@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
@@ -27,7 +26,7 @@ namespace UShop.Models
 		public Cart? Cart { get; set; }
 
 		[ValidateNever]
-		public CreditCard? CreditCards { get; set; }
+		public CreditCard? CreditCard { get; set; }
 
 		public ICollection<Order> Orders { get; set; } = new List<Order>();
 	}
