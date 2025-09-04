@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
@@ -21,6 +23,14 @@ namespace UShop.Models
 		public string? Address { get; set; }
 
 		// Relationships
+		[Required]
+		public int CartId { get; set; }
+		[ValidateNever]
+		public Order? Cart { get; set; }
+
+
+		[ValidateNever]
+		public CreditCard? CreditCards { get; set; }
 
 		public ICollection<Order> Orders { get; set; } = new List<Order>();
 	}
