@@ -1,58 +1,67 @@
-﻿@{
+﻿@model List<UShop.Models.Category>
+@{
     ViewData["Title"] = "UShop - Home";
 }
 
+@functions {
+    private static string GetRandomColor()
+    {
+        var colors = new[] { "#e0f7fa", "#fce4ec", "#f3e5f5", "#fff3e0", "#f9fbe7", "#ede7f6" };
+        var rand = new Random();
+        return colors[rand.Next(colors.Length)];
+    }
+}
+
 <div class="container mt-5">
-    @* <!-- Hero Section -->
-    <div class="p-5 mb-5 text-center text-white rounded shadow-lg" style="background: linear-gradient(90deg, #ff6a00, #ee0979);">
-        <h1 class="display-3 fw-bold">🛒 Welcome to <span style="color: #ffd700;">UShop</span></h1>
-        <p class="lead">Your one-stop shop for trendy, stylish, and affordable products.</p>
-        <a class="btn btn-warning btn-lg me-2 fw-bold shadow" href="/Products">✨ Shop Now</a>
-        <a class="btn btn-light btn-lg fw-bold shadow" href="/Account/Login">Sign In</a>
-    </div> *@
 
     <!-- Hero Section -->
-    <div class="hero">
-        <h1>Welcome to UShop 🛍️</h1>
-        <p>Discover amazing products at unbeatable prices.</p>
-        <a class="btn btn-ushop" asp-controller="Products" asp-action="Index">Shop Now</a>
+    <div class="p-5 mb-5 text-center text-white rounded shadow-lg"
+         style="background: linear-gradient(90deg, #ff6a00, #ee0979);">
+        <h1 class="display-3 fw-bold">🛒 Welcome to <span style="color: #ffd700;">UShop</span></h1>
+        <p class="lead">Your one-stop shop for trendy, stylish, and affordable products.</p>
+        <a asp-controller="Category" asp-action="Browse"
+           class="btn btn-warning btn-lg me-2 fw-bold shadow">
+            ✨ Browse Categories
+        </a>
+        <a asp-controller="Cart" asp-action="Index"
+           class="btn btn-light btn-lg fw-bold shadow">
+            🛍️ View Cart
+        </a>
     </div>
 
     <!-- Categories Section -->
-    <h2 class="text-center mt-5 mb-4 fw-bold text-primary">Browse by Category</h2>
-    <div class="row text-center">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-lg" style="background: #e0f7fa;">
-                <img src="~/images/electronics.jpg" class="card-img-top" alt="Electronics">
-                <div class="card-body">
-                    <h5 class="card-title text-info fw-bold">Electronics</h5>
-                    <p class="card-text">Latest gadgets, mobiles, and accessories.</p>
-                    <a href="/Products?category=Electronics" class="btn btn-info text-white fw-bold">Explore</a>
+    <h2 class="text-center mb-4 fw-bold text-primary">🗂️ Shop by Categories</h2>
+    <div class="row d-flex flex-wrap">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var category in Model)
+            {
+                <div class="col-md-4 mb-4 d-flex">
+                    <a asp-controller="Product" asp-action="ByCategory"
+                       asp-route-categoryId="@category.Id"
+                       class="text-decoration-none w-100">
+                        <div class="card h-100 border-0 shadow-lg flex-fill"
+                             style="background:@GetRandomColor();">
+                            <img src="~/images/electronics.jpg" class="card-img-top" alt="@category.Name">
+                            <div class="card-body text-dark">
+                                <h5 class="card-title fw-bold">@category.Name</h5>
+                                <p class="card-text">
+                                    @(!string.IsNullOrEmpty(category.Description)
+                                        ? category.Description
+                                        : "No description available")
+                                </p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center">
+                <div class="alert alert-info">No categories available</div>
             </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-lg" style="background: #fff3e0;">
-                <img src="~/images/fashion.jpg" class="card-img-top" alt="Fashion">
-                <div class="card-body">
-                    <h5 class="card-title text-warning fw-bold">Fashion</h5>
-                    <p class="card-text">Trendy clothes and stylish accessories.</p>
-                    <a href="/Products?category=Fashion" class="btn btn-warning text-dark fw-bold">Explore</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-lg" style="background: #f3e5f5;">
-                <img src="~/images/home.jpg" class="card-img-top" alt="Home & Living">
-                <div class="card-body">
-                    <h5 class="card-title text-purple fw-bold">Home & Living</h5>
-                    <p class="card-text">Everything you need for your home comfort.</p>
-                    <a href="/Products?category=Home" class="btn btn-purple text-white fw-bold" style="background:#8e24aa;">Explore</a>
-                </div>
-            </div>
-        </div>
+        }
     </div>
 
     <!-- Featured Products -->
@@ -106,4 +115,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Latest Products -->
+    <h2 class="text-center mt-5 mb-4 fw-bold text-secondary">🆕 Latest Products</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow">
+                <img src="~/images/sample1.jpg" class="card-img-top" alt="Product 1">
+                <div class="card-body">
+                    <h5 class="card-title">Sample Product 1</h5>
+                    <p class="card-text">Short description of product 1.</p>
+                    <p class="fw-bold text-success">$25.00</p>
+                    <a href="#" class="btn btn-sm btn-ushop">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow">
+                <img src="~/images/sample2.jpg" class="card-img-top" alt="Product 2">
+                <div class="card-body">
+                    <h5 class="card-title">Sample Product 2</h5>
+                    <p class="card-text">Short description of product 2.</p>
+                    <p class="fw-bold text-success">$40.00</p>
+                    <a href="#" class="btn btn-sm btn-ushop">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Font Awesome للآيكونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
