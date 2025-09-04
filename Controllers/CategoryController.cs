@@ -19,17 +19,11 @@ namespace UShop.Controllers
         // Displays a list of all categories.
         public async Task<IActionResult> Index()
         {
-            try
-            {
+            
                 var categories = await _context.Categories.ToListAsync();
-                return View(categories);
-            }
-            catch (Exception ex)
-            {
-                // Log the error and show user-friendly message
-                ViewBag.ErrorMessage = $"An error occurred while loading categories: {ex.Message}";
-                return View(new List<Category>());
-            }
+                return View(categories?? new List<Category>());
+           
+            
         }
 
         // GET: Category/Create
@@ -220,7 +214,9 @@ namespace UShop.Controllers
             }
         }
 
+
         // Helper method to check if a category exists.
+       
         private bool CategoryExists(int id)
         {
             try
@@ -232,5 +228,12 @@ namespace UShop.Controllers
                 return false;
             }
         }
+        public async Task<IActionResult> Browse()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            return View(categories); // Return the list of categories to the view.
+        }
+
+
     }
 }

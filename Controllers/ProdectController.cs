@@ -332,5 +332,17 @@ namespace UShop.Controllers
                 }
             }
         }
+        public async Task<IActionResult> ByCategory(int categoryId)
+        {
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.CategoryId == categoryId)
+                .ToListAsync();
+
+            ViewBag.CategoryName = _context.Categories.FirstOrDefault(c => c.Id == categoryId)?.Name;
+            return View(products);
+        }
+       
+
     }
 }
