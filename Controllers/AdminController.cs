@@ -1,114 +1,131 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UShop.Data;
 using UShop.Models;
 
 namespace UShop.Controllers
 {
-	public class AdminController : Controller
-	{
-		private readonly UShopDBContext _context;
+    public class AdminController : Controller
+    {
+        private readonly UShopDBContext _context;
 
-		public AdminController(UShopDBContext context)
-		{
-			_context = context;
-		}
+        public AdminController(UShopDBContext context)
+        {
+            _context = context;
+        }
 
-		// GET: Admin
-		public async Task<IActionResult> Index()
-		{
-			return View(await _context.Admins.ToListAsync());
-		}
+        // GET: /Admin
+        public async Task<IActionResult> Index()
+        {
+            var admins = await _context.Admins
+                .AsNoTracking()
+                .ToListAsync();
+            return View(admins);
+        }
 
-		// GET: Admin/Details/5
-		public async Task<IActionResult> Details(int? id)
-		{
-			if (id == null) return NotFound();
+        // GET: /Admin/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
 
-			var admin = await _context.Admins.FirstOrDefaultAsync(m => m.Id == id);
-			if (admin == null) return NotFound();
+            var admin = await _context.Admins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id.Value);
 
+            if (admin == null) return NotFound();
+
+            return View(admin);
+        }
+
+        // GET: /Admin/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: /Admin/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("FullName,Email")] Admin admin)
+        {
+            if (!ModelState.IsValid) return View(admin);
+
+            _context.Admins.Add(admin);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 			return View(admin);
 		}
 
-		// GET: Admin/Create
-		public IActionResult Create()
-		{
-			return View();
-		}
+        // GET: /Admin/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
 
-		// POST: Admin/Create
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("Id,FullName,Email")] Admin admin)
-		{
+            var admin = await _context.Admins.FindAsync(id.Value);
+            if (admin == null) return NotFound();
+
+            return View(admin);
+        }
+
+        // POST: /Admin/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email")] Admin admin)
+        {
+            if (id != admin.Id) return NotFound();
+            if (!ModelState.IsValid) return View(admin);
+
 			if (ModelState.IsValid)
 			{
-				_context.Add(admin);
-				await _context.SaveChangesAsync();
-				return RedirectToAction(nameof(Index));
-			}
+            try
+            {
+                _context.Update(admin);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AdminExists(admin.Id))
+                    return NotFound();
+                throw;
+            }
 			return View(admin);
-		}
+        }
 
-		// GET: Admin/Edit/5
-		public async Task<IActionResult> Edit(int? id)
-		{
-			if (id == null) return NotFound();
+        // GET: /Admin/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
 
-			var admin = await _context.Admins.FindAsync(id);
-			if (admin == null) return NotFound();
+            var admin = await _context.Admins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id.Value);
 
-			return View(admin);
-		}
+            if (admin == null) return NotFound();
 
-		// POST: Admin/Edit/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email")] Admin admin)
-		{
-			if (id != admin.Id) return NotFound();
+            return View(admin);
+        }
 
-			if (ModelState.IsValid)
-			{
-				try
-				{
-					_context.Update(admin);
-					await _context.SaveChangesAsync();
-				}
-				catch (DbUpdateConcurrencyException)
-				{
-					if (!_context.Admins.Any(e => e.Id == admin.Id)) return NotFound();
-					else throw;
-				}
-				return RedirectToAction(nameof(Index));
-			}
-			return View(admin);
-		}
+        // POST: /Admin/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var admin = await _context.Admins.FindAsync(id);
+            if (admin != null)
+            {
+                _context.Admins.Remove(admin);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-		// GET: Admin/Delete/5
-		public async Task<IActionResult> Delete(int? id)
-		{
-			if (id == null) return NotFound();
-
-			var admin = await _context.Admins.FirstOrDefaultAsync(m => m.Id == id);
-			if (admin == null) return NotFound();
-
-			return View(admin);
-		}
-
-		// POST: Admin/Delete/5
-		[HttpPost, ActionName("Delete")]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteConfirmed(int id)
-		{
-			var admin = await _context.Admins.FindAsync(id);
-			if (admin != null)
-			{
-				_context.Admins.Remove(admin);
-				await _context.SaveChangesAsync();
-			}
-			return RedirectToAction(nameof(Index));
-		}
-	}
+        private bool AdminExists(int id)
+        {
+            return _context.Admins.Any(e => e.Id == id);
+        }
+    }
 }
