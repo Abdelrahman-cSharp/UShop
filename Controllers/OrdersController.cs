@@ -19,11 +19,13 @@ namespace UShop.Controllers
 		// GET: Orders
 		public async Task<IActionResult> Index()
 		{
+			var customerId = 1; // TODO: replace with logged-in user ID
 			var orders = await _context.Orders
-				  .Include(o => o.Customer)
-				  .Include(o => o.Items)
-						 .ThenInclude(oi => oi.Product) // include product inside order item
-				  .ToListAsync();
+				 .Where(o => o.CustomerId == customerId) // only logged-in user's orders
+				 .Include(o => o.Customer)
+				 .Include(o => o.Items)
+					  .ThenInclude(oi => oi.Product)
+				 .ToListAsync();
 
 			return View(orders);
 		}
@@ -31,11 +33,13 @@ namespace UShop.Controllers
 		// GET: Orders/Details/5
 		public async Task<IActionResult> Details(int id)
 		{
+			var customerId = 1; // TODO: replace with logged-in user ID
 			var order = await _context.Orders
-				  .Include(o => o.Customer)
-				  .Include(o => o.Items)
-						 .ThenInclude(oi => oi.Product)
-				  .FirstOrDefaultAsync(o => o.Id == id);
+				 .Where(o => o.CustomerId == customerId) // secure: user can only access own order
+				 .Include(o => o.Customer)
+				 .Include(o => o.Items)
+					  .ThenInclude(oi => oi.Product)
+				 .FirstOrDefaultAsync(o => o.Id == id);
 
 			if (order == null) return NotFound();
 
