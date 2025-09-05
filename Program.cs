@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 using UShop.Data;
 using UShop.Models;
 
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add MVC controllers with views
 builder.Services.AddControllersWithViews();
 
+// Stripe Configurations
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 // Add DbContext (your application context)
 builder.Services.AddDbContext<UShopDBContext>(options =>
