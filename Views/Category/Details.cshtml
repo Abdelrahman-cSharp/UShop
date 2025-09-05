@@ -123,7 +123,8 @@
             navigator.share({
                 title: 'Category: @Model?.Name',
                 text: 'Check out this category on UShop',
-                url: url
+                url: url,
+               
             });
         } else {
             navigator.clipboard.writeText(url).then(() => {
