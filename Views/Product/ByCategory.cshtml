@@ -1,0 +1,42 @@
+﻿@model IEnumerable<UShop.Models.Product>
+
+<h2 class="mb-4">@ViewBag.CategoryName - Products</h2>
+
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm position-relative">
+
+                <!-- الصورة clickable -->
+                <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">
+                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.png" : product.ImageUrl)"
+                         class="card-img-top" alt="@product.Name" />
+                </a>
+
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">@product.Name</h5>
+                    <p class="card-text text-muted">
+                        @(string.IsNullOrEmpty(product.Description)
+                            ? "No description available."
+                            : product.Description.Length > 80
+                            ? product.Description.Substring(0, 80) + "..."
+                            : product.Description)
+                    </p>
+                    <p class="fw-bold text-success">@product.Price.ToString("C")</p>
+
+                    <!-- Add to Cart -->
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post" class="mt-2">
+                        <input type="hidden" name="productId" value="@product.Id" />
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />

@@ -1,0 +1,48 @@
+﻿@model IEnumerable<UShop.Models.Category>
+@{
+    ViewData["Title"] = "Browse Categories";
+}
+
+@functions {
+    private static string GetRandomColor()
+    {
+        var colors = new[] { "#e0f7fa", "#fce4ec", "#f3e5f5", "#fff3e0", "#f9fbe7", "#ede7f6" };
+        var rand = new Random();
+        return colors[rand.Next(colors.Length)];
+    }
+}
+
+<h2 class="mb-4">Browse Categories</h2>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row d-flex flex-wrap">
+        @foreach (var category in Model)
+        {
+            <div class="col-md-4 mb-4 d-flex">
+                <a asp-controller="Product"
+                   asp-action="ByCategory"
+                   asp-route-categoryId="@category.Id"
+                   class="text-decoration-none w-100">
+                    <div class="card h-100 border-0 shadow-lg flex-fill" style="background:@GetRandomColor();">
+                        <img src="~/images/electronics.jpg" class="card-img-top" alt="@category.Name">
+                        <div class="card-body text-dark">
+                            <h5 class="card-title fw-bold">@category.Name</h5>
+                            <p class="card-text">
+                                @(!string.IsNullOrEmpty(category.Description)
+                                    ? category.Description
+                                    : "No description available")
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        No categories available.
+    </div>
+}
