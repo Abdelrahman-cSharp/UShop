@@ -93,6 +93,12 @@
                        max="@(Model.StockQuantity > 0 ? Model.StockQuantity : 1)"
                        value="1" class="form-control w-auto" />
             </div>
+            <div class="mt-3">
+                <span class="fw-semibold">Seller: </span>
+                <a asp-controller="Product" asp-action="BySeller" asp-route-sellerId="@Model.SellerId" class="text-decoration-none fw-bold text-primary">
+                    @Model.Seller?.FullName
+                </a>
+            </div>
 
             <div class="mt-4 d-flex flex-wrap gap-3">
                 <!-- Add to Cart -->

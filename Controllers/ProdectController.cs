@@ -367,6 +367,22 @@ namespace UShop.Controllers
             return View(query.ToList());
         }
 
+        public IActionResult BySeller(int sellerId)
+        {
+            var products = _context.Products
+                .Where(p => p.SellerId == sellerId)
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .ToList();
+
+            var seller = _context.Sellers.FirstOrDefault(s => s.Id == sellerId);
+
+            ViewBag.SellerName = seller?.FullName ?? "Unknown Seller";
+            ViewBag.SellerId = sellerId;
+
+            return View(products);
+        }
+
 
     }
 }

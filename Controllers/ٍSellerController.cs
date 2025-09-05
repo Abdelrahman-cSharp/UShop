@@ -144,5 +144,17 @@ namespace UShop.Controllers
         {
             return _context.Sellers.Any(e => e.Id == id);
         }
+
+        // GET: Seller/Browse  
+        //this is for Users to browse sellers and see their products count
+        public async Task<IActionResult> Browse()
+        {
+            var sellers = await _context.Sellers
+                .Include(s => s.Products) // Include products to count them
+                .ToListAsync();
+
+            return View(sellers);
+        }
+
     }
 }
