@@ -14,7 +14,36 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var categories = await _context.Categories.ToListAsync();
-        return View(categories ?? new List<Category>());
+        try
+        {
+            var categories = await _context.Categories.ToListAsync();
+            return View(categories ?? new List<Category>());
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            // You can use ILogger here if configured
+            // For now, return empty list
+            return View(new List<Category>());
+        }
+    }
+
+    public IActionResult Deals()
+    {
+        return View();
+    }
+
+    public async Task<IActionResult> Categories()
+    {
+        try
+        {
+            var categories = await _context.Categories.ToListAsync();
+            return View(categories ?? new List<Category>());
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return View(new List<Category>());
+        }
     }
 }
