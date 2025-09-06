@@ -1,158 +1,199 @@
-﻿@model List<UShop.Models.Category>
+﻿@model List<Category>
 @{
-    ViewData["Title"] = "UShop - Home";
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_WelcomeLayout.cshtml";
 }
 
-@functions {
-    private static string GetRandomColor()
-    {
-        var colors = new[] { "#e0f7fa", "#fce4ec", "#f3e5f5", "#fff3e0", "#f9fbe7", "#ede7f6" };
-        var rand = new Random();
-        return colors[rand.Next(colors.Length)];
-    }
-}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div id="particles-js"></div>
 
-<div class="container mt-5">
+    <div class="morphing-shape" style="width: 200px; height: 200px; top: 10%; left: 5%; animation-delay: 0s;"></div>
+    <div class="morphing-shape" style="width: 150px; height: 150px; top: 60%; right: 10%; animation-delay: 2s;"></div>
+    <div class="morphing-shape" style="width: 100px; height: 100px; bottom: 20%; left: 20%; animation-delay: 4s;"></div>
 
-    <!-- Hero Section -->
-    <div class="p-5 mb-5 text-center text-white rounded shadow-lg"
-         style="background: linear-gradient(90deg, #ff6a00, #ee0979);">
-        <h1 class="display-3 fw-bold">🛒 Welcome to <span style="color: #ffd700;">UShop</span></h1>
-        <p class="lead">Your one-stop shop for trendy, stylish, and affordable products.</p>
-        <a asp-controller="Category" asp-action="Browse"
-           class="btn btn-warning btn-lg me-2 fw-bold shadow">
-            ✨ Browse Categories
-        </a>
-        <a asp-controller="Cart" asp-action="Index"
-           class="btn btn-light btn-lg fw-bold shadow">
-            🛍️ View Cart
-        </a>
+    <div class="wave-bg"></div>
+
+    <!-- Floating Products -->
+    <div class="floating-products">
+        <div class="floating-product product-1 glow-on-hover magnetic" data-product="glasses">
+            <div style="font-size: 2em; margin-bottom: 10px;">👓</div>
+            <h4>GLASSES</h4>
+            <p style="color: #ff4757; font-weight: bold;">$299</p>
+        </div>
+
+        <div class="floating-product product-2 glow-on-hover magnetic" data-product="watches">
+            <div style="font-size: 2em; margin-bottom: 10px;">⌚</div>
+            <h4>WATCHES</h4>
+            <p style="color: #ff4757; font-weight: bold;">$199</p>
+        </div>
+
+        <div class="floating-product product-3 glow-on-hover magnetic" data-product="food">
+            <div style="font-size: 2em; margin-bottom: 10px;">🥬</div>
+            <h4>FRESH FOOD</h4>
+            <p style="color: #ff4757; font-weight: bold;">$29</p>
+        </div>
+
+        <div class="floating-product product-4 glow-on-hover magnetic" data-product="fashion">
+            <div style="font-size: 2em; margin-bottom: 10px;">👔</div>
+            <h4>FASHION</h4>
+            <p style="color: #ff4757; font-weight: bold;">$89</p>
+        </div>
+
+        <div class="floating-product product-5 glow-on-hover magnetic" data-product="beauty">
+            <div style="font-size: 2em; margin-bottom: 10px;">💄</div>
+            <h4>BEAUTY</h4>
+            <p style="color: #ff4757; font-weight: bold;">$49</p>
+        </div>
+
+        <div class="floating-product product-6 glow-on-hover magnetic" data-product="bags">
+            <div style="font-size: 2em; margin-bottom: 10px;">🎒</div>
+            <h4>BAGS</h4>
+            <p style="color: #ff4757; font-weight: bold;">$149</p>
+        </div>
     </div>
 
-    <!-- Categories Section -->
-    <h2 class="text-center mb-4 fw-bold text-primary">🗂️ Shop by Categories</h2>
-    <div class="swiper myCategorySwiper">
-        <div class="swiper-wrapper">
+    <!-- Hero Content -->
+    <div class="hero-content">
+        <h1>USHOP</h1>
+        <p class="typing-text" id="typingText">Your Ultimate Shopping Destination</p>
+        <p style="font-size: 1.2em; margin-bottom: 40px;" id="subText">Everything You Need, All in One Place</p>
+
+        <div class="cta-buttons">
+            <a href="#categories" class="btn btn-primary magnetic" id="startShoppingBtn">Start Shopping</a>
+            <a asp-controller="Home" asp-action="Deals" class="btn btn-secondary magnetic" id="viewDealsBtn">View Deals</a>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section" id="categories">
+    <div class="container">
+        <h2 class="section-title">Shop by Category</h2>
+
+        <div class="categories-grid">
             @if (Model != null && Model.Any())
             {
-                foreach (var category in Model)
+                @foreach (var category in Model)
                 {
-                    <div class="swiper-slide">
-                        <a asp-controller="Product" asp-action="ByCategory" asp-route-categoryId="@category.Id"
-                          
-                           class="text-decoration-none w-100 h-100 d-block">
-                            <div class="card h-100 border-0 shadow-lg"
-                                 style="background:@GetRandomColor(); width:100%; height:100vh;">
-                                <img src="~/images/electronics.jpg"
-                                     class="card-img-top"
-                                     alt="@category.Name"
-                                     style="max-height:400px; object-fit:cover;">
-                                <div class="card-body text-dark text-center">
-                                    <h5 class="card-title fw-bold">@category.Name</h5>
-                                    <p class="card-text">
-                                        @(!string.IsNullOrEmpty(category.Description)
-                                            ? category.Description
-                                            : "No description available")
-                                    </p>
-                                </div>
-                            </div>
+                    <div class="category-card magnetic glow-on-hover" data-category="@category.Name.ToLower()">
+                       <a asp-controller="Product" asp-action="ByCategory"
+                       asp-route-categoryId="@category.Id">
+                        <span class="category-icon">
+                            @switch (category.Name.ToLower())
+                            {
+                                case "fashion":
+                                case "clothes":
+                                    @:👔
+                                    break;
+                                case "electronics":
+                                case "electronic":
+                                    @:📱
+                                    break;
+                                case "home":
+                                case "home & living":
+                                case "home living":
+                                    @:🏠
+                                    break;
+                                case "sports":
+                                case "gaming":
+                                case "sports & gaming":
+                                case "sports gaming":
+                                    @:🎮
+                                    break;
+                                case "beauty":
+                                case "cosmetics":
+                                    @:💄
+                                    break;
+                                case "bags":
+                                case "accessories":
+                                    @:🎒
+                                    break;
+                                case "watches":
+                                case "watch":
+                                    @:⌚
+                                    break;
+                                case "glasses":
+                                case "eyewear":
+                                    @:👓
+                                    break;
+                                case "food":
+                                case "grocery":
+                                    @:🥬
+                                    break;
+                                default:
+                                    @:🛍️
+                                    break;
+                            }
+                        </span>
+                        <h3>@category.Name</h3>
+                        <p>@(category.Description ?? "Discover amazing products")</p>
                         </a>
                     </div>
                 }
             }
             else
             {
-                <div class="swiper-slide text-center">
-                    <div class="alert alert-info">No categories available</div>
+                <!-- Default categories if no data from database -->
+                <div class="category-card magnetic glow-on-hover" data-category="fashion">
+                    <span class="category-icon">👔</span>
+                    <h3>Fashion</h3>
+                    <p>Trendy clothes for men and women</p>
+                </div>
+
+                <div class="category-card magnetic glow-on-hover" data-category="electronics">
+                    <span class="category-icon">📱</span>
+                    <h3>Electronics</h3>
+                    <p>Latest gadgets and technology</p>
+                </div>
+
+                <div class="category-card magnetic glow-on-hover" data-category="home">
+                    <span class="category-icon">🏠</span>
+                    <h3>Home & Living</h3>
+                    <p>Beautiful items for your home</p>
+                </div>
+
+                <div class="category-card magnetic glow-on-hover" data-category="sports">
+                    <span class="category-icon">🎮</span>
+                    <h3>Sports & Gaming</h3>
+                    <p>Sports equipment and gaming gear</p>
                 </div>
             }
         </div>
-
-        <!-- Button from Right ,Left of Category -->
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
     </div>
+</section>
 
-    <!-- Featured Products -->
-    <h2 class="text-center mt-5 mb-4 fw-bold text-success">🌟 Featured Products</h2>
-    <div class="row text-center">
-        <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-lg">
-                <span class="badge bg-danger position-absolute mt-2 ms-2">Sale</span>
-                <img src="~/images/product1.jpg" class="card-img-top" alt="Product 1">
-                <div class="card-body">
-                    <h5 class="card-title">Wireless Headphones</h5>
-                    <p class="card-text text-success fw-bold">$49.99</p>
-                    <a href="/Products/Details/1" class="btn btn-success fw-bold">Buy Now</a>
-                </div>
-            </div>
-        </div>
+@section Scripts {
+    <script>
+        // عد تنازلي وتأثيرات أخرى
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loader after page load
+            setTimeout(function() {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+            }, 2000);
 
-        <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-lg">
-                <span class="badge bg-primary position-absolute mt-2 ms-2">Hot</span>
-                <img src="~/images/product2.jpg" class="card-img-top" alt="Product 2">
-                <div class="card-body">
-                    <h5 class="card-title">Smart Watch</h5>
-                    <p class="card-text text-primary fw-bold">$79.99</p>
-                    <a href="/Products/Details/2" class="btn btn-primary fw-bold">Buy Now</a>
-                </div>
-            </div>
-        </div>
+            // Add click events to category cards
+            const categoryCards = document.querySelectorAll('.category-card');
+            categoryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    console.log('Category clicked:', category);
+                    // يمكنك إضافة navigation logic هنا
+                });
+            });
 
-        <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-lg">
-                <span class="badge bg-warning text-dark position-absolute mt-2 ms-2">New</span>
-                <img src="~/images/product3.jpg" class="card-img-top" alt="Product 3">
-                <div class="card-body">
-                    <h5 class="card-title">Casual Shoes</h5>
-                    <p class="card-text text-warning fw-bold">$29.99</p>
-                    <a href="/Products/Details/3" class="btn btn-warning text-dark fw-bold">Buy Now</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-lg">
-                <span class="badge bg-success position-absolute mt-2 ms-2">Best</span>
-                <img src="~/images/product4.jpg" class="card-img-top" alt="Product 4">
-                <div class="card-body">
-                    <h5 class="card-title">Gaming Laptop</h5>
-                    <p class="card-text text-danger fw-bold">$999.99</p>
-                    <a href="/Products/Details/4" class="btn btn-danger fw-bold">Buy Now</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Latest Products -->
-    <h2 class="text-center mt-5 mb-4 fw-bold text-secondary">🆕 Latest Products</h2>
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow">
-                <img src="~/images/sample1.jpg" class="card-img-top" alt="Product 1">
-                <div class="card-body">
-                    <h5 class="card-title">Sample Product 1</h5>
-                    <p class="card-text">Short description of product 1.</p>
-                    <p class="fw-bold text-success">$25.00</p>
-                    <a href="#" class="btn btn-sm btn-ushop">Add to Cart</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow">
-                <img src="~/images/sample2.jpg" class="card-img-top" alt="Product 2">
-                <div class="card-body">
-                    <h5 class="card-title">Sample Product 2</h5>
-                    <p class="card-text">Short description of product 2.</p>
-                    <p class="fw-bold text-success">$40.00</p>
-                    <a href="#" class="btn btn-sm btn-ushop">Add to Cart</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Font Awesome للآيكونات -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+            // Floating products click events
+            const floatingProducts = document.querySelectorAll('.floating-product');
+            floatingProducts.forEach(product => {
+                product.addEventListener('click', function() {
+                    const productType = this.getAttribute('data-product');
+                    console.log('Product clicked:', productType);
+                    // يمكنك إضافة product navigation logic هنا
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,234 @@
+﻿@{
+    ViewData["Title"] = "Exclusive Deals";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- صفحة العروض الخاصة -->
+<div class="deals-page">
+    <!-- قسم البانر -->
+    <div class="deals-banner" style="background: linear-gradient(135deg, #ff6b6b, #ff3838); padding: 80px 20px; text-align: center; color: white;">
+        <div class="container">
+            <h1 style="font-size: 3.5rem; margin-bottom: 20px; font-weight: bold;">🔥 HOT DEALS</h1>
+            <p style="font-size: 1.4rem; max-width: 700px; margin: 0 auto;">Limited time offers! Don't miss our exclusive discounts and special promotions.</p>
+            <div class="countdown-timer mt-4">
+                <div class="timer-box" style="display: inline-block; background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; margin: 0 5px;">
+                    <div id="countdown-hours" style="font-size: 2.5rem; font-weight: bold;">24</div>
+                    <div>Hours</div>
+                </div>
+                <div class="timer-box" style="display: inline-block; background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; margin: 0 5px;">
+                    <div id="countdown-minutes" style="font-size: 2.5rem; font-weight: bold;">59</div>
+                    <div>Minutes</div>
+                </div>
+                <div class="timer-box" style="display: inline-block; background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; margin: 0 5px;">
+                    <div id="countdown-seconds" style="font-size: 2.5rem; font-weight: bold;">59</div>
+                    <div>Seconds</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم العروض -->
+    <div class="container mt-5">
+        <h2 class="text-center mb-4" style="font-size: 2.2rem; color: #333; font-weight: bold;">TODAY'S BEST DEALS</h2>
+
+        <div class="row">
+            <!-- عرض 1 -->
+            <div class="col-md-4 mb-4">
+                <div class="card deal-card h-100">
+                    <span class="deal-badge">50% OFF</span>
+                    <img src="https://via.placeholder.com/300x200/ff4757/ffffff?text=Smartphone" class="card-img-top" alt="Smartphone Deal">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Premium Smartphone</h5>
+                        <p class="card-text flex-grow-1">Latest model with advanced features and high-resolution camera.</p>
+                        <div class="price-container mt-auto">
+                            <span class="original-price">$999</span>
+                            <span class="deal-price">$499</span>
+                        </div>
+                        <div class="rating mb-2">
+                            <span class="text-warning">★★★★★</span>
+                            <span>(128 reviews)</span>
+                        </div>
+                        <a href="#" class="btn btn-danger mt-2">Grab Deal Now</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عرض 2 -->
+            <div class="col-md-4 mb-4">
+                <div class="card deal-card h-100">
+                    <span class="deal-badge">30% OFF</span>
+                    <img src="https://via.placeholder.com/300x200/3742fa/ffffff?text=Laptop" class="card-img-top" alt="Laptop Deal">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Gaming Laptop</h5>
+                        <p class="card-text flex-grow-1">High performance for gaming and work with RGB keyboard.</p>
+                        <div class="price-container mt-auto">
+                            <span class="original-price">$1299</span>
+                            <span class="deal-price">$909</span>
+                        </div>
+                        <div class="rating mb-2">
+                            <span class="text-warning">★★★★☆</span>
+                            <span>(64 reviews)</span>
+                        </div>
+                        <a href="#" class="btn btn-danger mt-2">Grab Deal Now</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عرض 3 -->
+            <div class="col-md-4 mb-4">
+                <div class="card deal-card h-100">
+                    <span class="deal-badge">40% OFF</span>
+                    <img src="https://via.placeholder.com/300x200/2ed573/ffffff?text=Headphones" class="card-img-top" alt="Headphones Deal">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Wireless Headphones</h5>
+                        <p class="card-text flex-grow-1">Premium sound quality with active noise cancellation.</p>
+                        <div class="price-container mt-auto">
+                            <span class="original-price">$299</span>
+                            <span class="deal-price">$179</span>
+                        </div>
+                        <div class="rating mb-2">
+                            <span class="text-warning">★★★★★</span>
+                            <span>(92 reviews)</span>
+                        </div>
+                        <a href="#" class="btn btn-danger mt-2">Grab Deal Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم العروض الخاصة -->
+    <div class="special-deals py-5 mt-5" style="background-color: #f8f9fa;">
+        <div class="container">
+            <h2 class="text-center mb-4" style="font-size: 2.2rem; color: #333; font-weight: bold;">SPECIAL OFFERS</h2>
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="special-deal-card" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4); padding: 30px; border-radius: 15px; color: white; height: 100%;">
+                        <h3 style="font-weight: bold;">FLASH SALE</h3>
+                        <p>Ends in: <span id="flash-countdown" style="font-weight: bold;">24:59:59</span></p>
+                        <p class="fs-5">Extra 10% off on electronics with code: <span class="bg-white text-dark px-2 py-1 rounded">FLASH10</span></p>
+                        <a href="#" class="btn btn-light btn-lg mt-3">Shop Now</a>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="special-deal-card" style="background: linear-gradient(135deg, #a1c4fd, #c2e9fb); padding: 30px; border-radius: 15px; color: white; height: 100%;">
+                        <h3 style="font-weight: bold;">BUY ONE GET ONE</h3>
+                        <p class="fs-5">Selected fashion items - buy one get one 50% off</p>
+                        <p class="fst-italic">Limited stock available</p>
+                        <a href="#" class="btn btn-light btn-lg mt-3">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .deal-card {
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+            .deal-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            }
+
+        .deal-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4757;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 10;
+            font-size: 0.9rem;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .deal-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff4757;
+        }
+
+        .special-deal-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s;
+        }
+
+            .special-deal-card:hover {
+                transform: scale(1.02);
+            }
+
+        .rating {
+            font-size: 1.1rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // عد تنازلي للعرض السريع
+        function updateCountdown() {
+            const hoursElement = document.getElementById('countdown-hours');
+            const minutesElement = document.getElementById('countdown-minutes');
+            const secondsElement = document.getElementById('countdown-seconds');
+            const flashElement = document.getElementById('flash-countdown');
+
+            let hours = parseInt(hoursElement.textContent);
+            let minutes = parseInt(minutesElement.textContent);
+            let seconds = parseInt(secondsElement.textContent);
+
+            if (seconds > 0) {
+                seconds--;
+            } else {
+                if (minutes > 0) {
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    if (hours > 0) {
+                        hours--;
+                        minutes = 59;
+                        seconds = 59;
+                    }
+                }
+            }
+
+            hoursElement.textContent = hours.toString().padStart(2, '0');
+            minutesElement.textContent = minutes.toString().padStart(2, '0');
+            secondsElement.textContent = seconds.toString().padStart(2, '0');
+            flashElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (hours === 0 && minutes === 0 && seconds === 0) {
+                clearInterval(countdownInterval);
+                // يمكنك إضافة أي إجراء عند انتهاء العد التنازلي هنا
+            }
+        }
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+    </script>
+}

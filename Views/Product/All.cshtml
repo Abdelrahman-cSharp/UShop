@@ -1,11 +1,8 @@
 ﻿@model List<UShop.Models.Product>
-
 @{
     ViewData["Title"] = "All Products";
-
     // Categories from ViewBag (defensive)
     var categories = (ViewBag.Categories as List<UShop.Models.Category>) ?? new List<UShop.Models.Category>();
-
     // Parse selectedCategoryId safely (ViewBag might contain string, int or null)
     int? selectedCategoryId = null;
     if (ViewBag.SelectedCategoryId != null)
@@ -16,69 +13,875 @@
             selectedCategoryId = parsed;
         }
     }
-
     // Search string from ViewBag (default to empty string)
     var searchString = (ViewBag.SearchString as string) ?? string.Empty;
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4 fw-bold text-primary">🛍️ All Products</h2>
-
-    <!-- 🔎 Search bar + Category filter -->
-    <form asp-controller="Product" asp-action="All" method="get" class="row mb-4">
-        <div class="col-md-6">
-            <input type="text" name="searchString" value="@searchString"
-                   class="form-control" placeholder="Search product by name..." />
+<div class="products-container">
+    <!-- Header Section -->
+    <div class="products-header">
+        <div class="container">
+            <div class="header-content fade-in">
+                <h1 class="main-title">
+                    <span class="title-icon">🛍️</span>
+                    <span class="title-text">Premium Products Collection</span>
+                </h1>
+                <p class="subtitle">Discover amazing products with unbeatable quality</p>
+            </div>
         </div>
-        <div class="col-md-3">
-            <select name="categoryId" class="form-select">
-                <option value="">-- All Categories --</option>
-                @foreach (var cat in categories)
-                {
-                    if (selectedCategoryId.HasValue && selectedCategoryId.Value == cat.Id)
-                    {
-                        <option value="@cat.Id" selected="selected">@cat.Name</option>
-                    }
-                    else
-                    {
-                        <option value="@cat.Id">@cat.Name</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary fw-bold flex-fill">Filter</button>
+    </div>
 
-            <!-- Reset button (clears filters and shows all products) -->
-            <a asp-controller="Product" asp-action="All"
-               class="btn btn-secondary fw-bold flex-fill">
-                Reset
-            </a>
-        </div>
-    </form>
-
-    <!-- Products list -->
-    <div class="row">
-        @foreach (var product in Model)
-        {
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 border-0 shadow-lg">
-                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/default.jpg" : product.ImageUrl)"
-                         class="card-img-top"
-                         alt="@product.Name"
-                         style="max-height:200px; object-fit:cover;" />
-
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">@product.Name</h5>
-                        <p class="text-muted">@product.Category?.Name</p>
-                        <p class="fw-bold text-success">$@product.Price</p>
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id"
-                           class="btn btn-primary btn-sm fw-bold">
-                            View Details
-                        </a>
+    <!-- Search and Filter Section -->
+    <div class="filter-section">
+        <div class="container">
+            <form asp-controller="Product" asp-action="All" method="get" class="filter-form slide-in">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-5 col-md-12">
+                        <div class="search-group">
+                            <label class="form-label">Search Products</label>
+                            <div class="search-wrapper">
+                                <i class="search-icon">🔍</i>
+                                <input type="text" name="searchString" value="@searchString"
+                                       class="search-input" placeholder="Find your perfect product..." />
+                                <div class="search-ripple"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-8">
+                        <div class="select-group">
+                            <label class="form-label">Category</label>
+                            <div class="select-wrapper">
+                                <select name="categoryId" class="category-select">
+                                    <option value="">All Categories</option>
+                                    @foreach (var cat in categories)
+                                    {
+                                        if (selectedCategoryId.HasValue && selectedCategoryId.Value == cat.Id)
+                                        {
+                                            <option value="@cat.Id" selected="selected">@cat.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4">
+                        <div class="button-group">
+                            <button type="submit" class="filter-btn primary-btn">
+                                <span>Filter</span>
+                                <div class="btn-ripple"></div>
+                            </button>
+                            <a asp-controller="Product" asp-action="All" class="filter-btn secondary-btn">
+                                <span>Reset</span>
+                                <div class="btn-ripple"></div>
+                            </a>
+                        </div>
                     </div>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid">
+        <div class="container">
+            <div class="row g-4">
+                @foreach (var product in Model)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <div class="product-card" data-product-id="@product.Id">
+                            <!-- Product Image -->
+                            <div class="product-image-wrapper">
+                                <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/default.jpg" : product.ImageUrl)"
+                                     class="product-image" alt="@product.Name" />
+                                <div class="image-overlay">
+                                    <div class="quick-actions">
+                                        <button class="action-btn wishlist-btn" title="Add to Wishlist">
+                                            <i class="heart-icon">💖</i>
+                                        </button>
+                                        <button class="action-btn quick-view-btn" title="Quick View">
+                                            <i class="eye-icon">👁️</i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Sale Badge -->
+                                <div class="sale-badge">
+                                    <span>Hot</span>
+                                </div>
+                            </div>
+
+                            <!-- Product Info -->
+                            <div class="product-info">
+                                <div class="product-category">@product.Category?.Name</div>
+                                <h3 class="product-title">@product.Name</h3>
+                                <div class="product-rating">
+                                    <div class="stars">
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star">⭐</span>
+                                    </div>
+                                    <span class="rating-text">(4.2)</span>
+                                </div>
+                                <div class="price-section">
+                                    <span class="current-price">$@product.Price</span>
+                                    <span class="original-price">$@(product.Price * 1.2m)</span>
+                                </div>
+
+                                <!-- Hidden Action Buttons -->
+                                <div class="product-actions">
+                                    <button class="add-to-cart-btn" data-product-id="@product.Id">
+                                        <span class="cart-icon">🛒</span>
+                                        <span class="btn-text">Add to Cart</span>
+                                        <div class="btn-loading">
+                                            <div class="loading-spinner"></div>
+                                        </div>
+                                    </button>
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id"
+                                       class="view-details-btn">
+                                        <span>View Details</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
-        }
+
+            @if (!Model.Any())
+            {
+                <div class="no-products">
+                    <div class="no-products-content">
+                        <div class="no-products-icon">📦</div>
+                        <h3>No products found</h3>
+                        <p>Try adjusting your search criteria or browse all categories</p>
+                        <a asp-controller="Product" asp-action="All" class="browse-all-btn">Browse All Products</a>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 </div>
+
+<!-- Success Toast -->
+<div class="toast-container">
+    <div class="success-toast" id="successToast">
+        <div class="toast-icon">✅</div>
+        <div class="toast-message">Product added to cart successfully!</div>
+        <div class="toast-progress"></div>
+    </div>
+</div>
+
+<style>
+    /* Global Animations */
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes slideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    }
+
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    }
+
+    @@keyframes bounce {
+        0%, 20%, 53%, 80%, 100%
+
+    {
+        transform: translateY(0);
+    }
+
+    40%, 43% {
+        transform: translateY(-10px);
+    }
+
+    70% {
+        transform: translateY(-5px);
+    }
+
+    90% {
+        transform: translateY(-2px);
+    }
+
+    }
+
+    @@keyframes spin {
+        from
+
+    {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* Container Styles */
+    .products-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* Header Section */
+    .products-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 0 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .products-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a"><stop offset="20%" stop-color="%23fff" stop-opacity="0.1"/><stop offset="100%" stop-color="%23fff" stop-opacity="0"/></radialGradient></defs><circle fill="url(%23a)" cx="10" cy="10" r="10"/></svg>') repeat;
+            animation: float 20s ease-in-out infinite;
+        }
+
+    @@keyframes float {
+        0%, 100%
+
+    {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    }
+
+    .header-content {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .fade-in {
+        animation: fadeIn 1s ease-out;
+    }
+
+    .slide-in {
+        animation: slideIn 1s ease-out 0.3s both;
+    }
+
+    .main-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .title-icon {
+        display: inline-block;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    .subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        padding: 3rem 0;
+        background: white;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 10;
+    }
+
+    .filter-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Search Input */
+    .search-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 15px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        opacity: 0.6;
+    }
+
+    /* Select Wrapper */
+    .select-wrapper {
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .category-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 15px;
+        font-size: 1rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .category-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+    /* Buttons */
+    .button-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .filter-btn {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .primary-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+    .secondary-btn {
+        background: #f8f9fa;
+        color: #666;
+        border: 2px solid #e1e5e9;
+    }
+
+        .secondary-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            color: #333;
+            text-decoration: none;
+        }
+
+    /* Products Grid */
+    .products-grid {
+        padding: 4rem 0;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+    /* Product Image */
+    .product-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 250px;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .action-btn {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: #667eea;
+            color: white;
+        }
+
+    .sale-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+    }
+
+    /* Product Info */
+    .product-info {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-category {
+        color: #667eea;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stars {
+        display: flex;
+        gap: 0.1rem;
+    }
+
+    .rating-text {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .current-price {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #667eea;
+    }
+
+    .original-price {
+        font-size: 1rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    /* Product Actions */
+    .product-actions {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        margin-top: auto;
+    }
+
+    .product-card:hover .product-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .add-to-cart-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-to-cart-btn.loading .btn-text,
+        .add-to-cart-btn.loading .cart-icon {
+            opacity: 0;
+        }
+
+    .btn-loading {
+        position: absolute;
+        display: none;
+    }
+
+    .add-to-cart-btn.loading .btn-loading {
+        display: block;
+    }
+
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    .view-details-btn {
+        width: 100%;
+        padding: 0.8rem;
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+        .view-details-btn:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+        }
+
+    /* No Products */
+    .no-products {
+        text-align: center;
+        padding: 4rem 0;
+    }
+
+    .no-products-content {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .no-products-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .browse-all-btn {
+        background: #667eea;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .browse-all-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+
+    /* Toast */
+    .toast-container {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 10000;
+    }
+
+    .success-toast {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .success-toast.show {
+            transform: translateX(0);
+        }
+
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: #4CAF50;
+        width: 0%;
+        transition: width 3s linear;
+    }
+
+    .success-toast.show .toast-progress {
+        width: 100%;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .main-title
+
+    {
+        font-size: 2.5rem;
+    }
+
+    .filter-form {
+        padding: 1.5rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .toast-container {
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+    }
+
+    .success-toast {
+        transform: translateY(-100px);
+    }
+
+        .success-toast.show {
+            transform: translateY(0);
+        }
+
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add to cart functionality
+        const addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
+        const successToast = document.getElementById('successToast');
+
+        addToCartBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Add loading state
+                this.classList.add('loading');
+
+                // Simulate API call
+                setTimeout(() => {
+                    this.classList.remove('loading');
+
+                    // Show success toast
+                    successToast.classList.add('show');
+
+                    // Hide toast after 3 seconds
+                    setTimeout(() => {
+                        successToast.classList.remove('show');
+                    }, 3000);
+
+                    // Add bounce animation to cart icon in navbar
+                    const cartIcon = document.querySelector('.cart-icon');
+                    if (cartIcon) {
+                        cartIcon.style.animation = 'bounce 0.6s ease-in-out';
+                        setTimeout(() => {
+                            cartIcon.style.animation = '';
+                        }, 600);
+                    }
+                }, 1500);
+            });
+        });
+
+        // Wishlist functionality
+        const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+        wishlistBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+
+                if (this.classList.contains('active')) {
+                    this.style.background = '#ff6b6b';
+                    this.style.color = 'white';
+                    this.style.transform = 'scale(1.2)';
+
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+                } else {
+                    this.style.background = 'white';
+                    this.style.color = '#333';
+                }
+            });
+        });
+
+        // Product cards entrance animation
+        const productCards = document.querySelectorAll('.product-card');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        productCards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            cardObserver.observe(card);
+        });
+    });
+</script>
