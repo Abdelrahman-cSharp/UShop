@@ -54,7 +54,7 @@
         <!-- التفاصيل -->
         <div class="col-lg-7">
             <h1 class="fw-bold">@Model.Name</h1>
-
+           
             <div class="d-flex align-items-center gap-3 mt-2">
                 <div class="rating text-warning">
                     <i class="fa-solid fa-star"></i>
@@ -92,6 +92,12 @@
                 <input id="qty" name="quantity" type="number" min="1"
                        max="@(Model.StockQuantity > 0 ? Model.StockQuantity : 1)"
                        value="1" class="form-control w-auto" />
+            </div>
+            <div class="mt-3">
+                <span class="fw-semibold">Seller: </span>
+                <a asp-controller="Product" asp-action="BySeller" asp-route-sellerId="@Model.SellerId" class="text-decoration-none fw-bold text-primary">
+                    @Model.Seller?.FullName
+                </a>
             </div>
 
             <div class="mt-4 d-flex flex-wrap gap-3">

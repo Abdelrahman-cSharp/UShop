@@ -1,31 +1,71 @@
-html {
-  font-size: 14px;
+﻿.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350px; /* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 40%;
+    }
+.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350%* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 100%;
+    }
+.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350%; /* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 350%;
+    }
+
+/* محاذاة عناصر شريط التنقل إلى اليمين */
+.navbar-collapse.justify-content-end ul.navbar-nav {
+    margin-left: auto; /* يدفع العناصر إلى اليمين */
 }
 
-body {
-  margin-bottom: 60px;
+/* تعديل لتنسيق عنصر البحث ليتناسب مع المحاذاة */
+.navbar-custom .form-inline {
+    margin-left: 0;
+    margin-right: auto; /* إذا كنت ترغب في دفع حقل البحث إلى اليسار */
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* تأكد من أن الشعار (UShop) يبقى في اليسار */
+.navbar-brand {
+    margin-right: auto;
+    margin-left: 0;
 }

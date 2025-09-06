@@ -342,7 +342,47 @@ namespace UShop.Controllers
             ViewBag.CategoryName = _context.Categories.FirstOrDefault(c => c.Id == categoryId)?.Name;
             return View(products);
         }
-       
+
+        public IActionResult All(string searchString, int? categoryId)
+        {
+            var query = _context.Products.Include(p => p.Category).AsQueryable();
+
+            // فلترة بالبحث
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(p => p.Name.Contains(searchString));
+            }
+
+            // فلترة بالكاتيجوري
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(p => p.CategoryId == categoryId);
+            }
+
+            // نجهز الكاتيجوريز في ViewBag
+            ViewBag.Categories = _context.Categories.ToList();
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SearchString = searchString;
+
+            return View(query.ToList());
+        }
+
+        public IActionResult BySeller(int sellerId)
+        {
+            var products = _context.Products
+                .Where(p => p.SellerId == sellerId)
+                .Include(p => p.Category)
+                .Include(p => p.Seller)
+                .ToList();
+
+            var seller = _context.Sellers.FirstOrDefault(s => s.Id == sellerId);
+
+            ViewBag.SellerName = seller?.FullName ?? "Unknown Seller";
+            ViewBag.SellerId = sellerId;
+
+            return View(products);
+        }
+
 
     }
 }

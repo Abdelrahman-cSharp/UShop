@@ -1,24 +1,34 @@
 ﻿@model IEnumerable<UShop.Models.Product>
 
-<h2>@ViewBag.CategoryName - Products</h2>
+@{
+    ViewData["Title"] = "Products by " + ViewBag.SellerName;
+}
 
-<div class="row">
-    @foreach (var product in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
-                <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name">
-                <div class="card-body">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text">@product.Description</p>
-                    <p class="fw-bold text-success">@product.Price.ToString("C")</p>
+<div class="container mt-5">
+    <h2 class="text-center mb-4 fw-bold text-primary">🛒 Products by @ViewBag.SellerName</h2>
 
-                    <form asp-controller="Cart" asp-action="AddToCart" method="post">
-                        <input type="hidden" name="productId" value="@product.Id" />
-                        <button type="submit" class="btn btn-primary">➕ أضف للسلة</button>
-                    </form>
+    <div class="row">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 border-0 shadow-lg">
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">
+                        <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.png" : product.ImageUrl)"
+                             class="card-img-top"
+                             alt="@product.Name"
+                             style="max-height:200px; object-fit:cover;" />
+                    </a>
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">@product.Name</h5>
+                        <p class="text-muted">@product.Category?.Name</p>
+                        <p class="fw-bold text-success">$@product.Price</p>
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id"
+                           class="btn btn-primary btn-sm fw-bold">
+                            View Details
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
