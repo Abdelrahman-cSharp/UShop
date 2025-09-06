@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Stripe;
 using UShop.Data;
 using UShop.Models;
@@ -42,7 +43,24 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+//--------------TO BE DELETED-----testing without login------------------------
+//app.Use(async (context, next) =>
+//{
+//	// Fake login user with ID = 1
+//	var claims = new List<Claim>
+//	 {
+//		  new Claim(ClaimTypes.NameIdentifier, "1"),
+//		  new Claim(ClaimTypes.Name, "TestUser"),
+//		  new Claim(ClaimTypes.Email, "test@example.com")
+//	 };
 
+//	var identity = new ClaimsIdentity(claims, "FakeAuth");
+//	context.User = new ClaimsPrincipal(identity);
+
+//	await next();
+//});
+
+//-------------------------------------------
 app.UseAuthentication();
 app.UseAuthorization();
 
