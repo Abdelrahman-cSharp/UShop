@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UShop.Data;
 using UShop.Models;
 
 namespace UShop.Controllers
 {
-    public class CheckoutController : Controller
+	public class CheckoutController : Controller
     {
         private readonly UShopDBContext _context;
         private readonly UserManager<User> _userManager;
@@ -34,7 +34,7 @@ namespace UShop.Controllers
                 {
                     customer = new Customer
                     {
-                        FullName = user.FullName ?? string.Empty,
+                        FullName = user.UserName ?? string.Empty,
                         Email = user.Email ?? string.Empty,
                         Address = string.Empty
                     };
@@ -82,7 +82,7 @@ namespace UShop.Controllers
                 {
                     customer = new Customer
                     {
-                        FullName = user.FullName ?? string.Empty,
+                        FullName = user.UserName ?? string.Empty,
                         Email = user.Email ?? string.Empty,
                         Address = string.Empty
                     };
