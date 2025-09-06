@@ -26,6 +26,12 @@
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <input asp-for="Description" class="form-control" placeholder="Enter description..." />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
         <button type="submit" class="btn btn-ushop">Save Changes</button>
         <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
     </form>

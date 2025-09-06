@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UShop.Data;
 using UShop.Models;
 
 namespace UShop.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	public class AdminController : Controller
 	{
 		private readonly UShopDBContext _context;
@@ -45,7 +47,7 @@ namespace UShop.Controllers
 		// POST: /Admin/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("FullName,Email")] Admin admin)
+		public async Task<IActionResult> Create(Admin admin)
 		{
 			if (!ModelState.IsValid) return View(admin);
 
@@ -53,6 +55,7 @@ namespace UShop.Controllers
 			await _context.SaveChangesAsync();
 			return RedirectToAction(nameof(Index));
 		}
+
 
 		// GET: /Admin/Edit/5
 		public async Task<IActionResult> Edit(int? id)
@@ -67,7 +70,7 @@ namespace UShop.Controllers
 		// POST: /Admin/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Email")] Admin admin)
+		public async Task<IActionResult> Edit(int id, Admin admin)
 		{
 			if (id != admin.Id) return NotFound();
 			if (!ModelState.IsValid) return View(admin);
