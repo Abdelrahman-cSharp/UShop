@@ -1,166 +1,163 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using UShop.Models
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - UShop</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/UShop.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/SearchBar.css" />
-    <link rel="stylesheet" href="~/js/SearchBar.js" />
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - UShop</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/UShop.styles.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/SearchBar.css" />
 
+	<link rel="icon" href="~/assets/images/favicon/1.png" type="image/x-icon">
+	<link rel="shortcut icon" href="~/assets/images/favicon/1.png" type="image/x-icon">
 
+	<!-- Swiper -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <link rel="icon" href="~/assets/images/favicon/1.png" type="image/x-icon">
-    <link rel="shortcut icon" href="../assets/images/favicon/1.png" type="image/x-icon">
+	<!-- Google font -->
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-   
+	<!-- Icons -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/fontawesome.css">
 
+	<!-- Slick slider css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/slick.css">
+	<link rel="stylesheet" type="text/css" href="~/assets/css/slick-theme.css">
 
-    <!--Google font-->
-    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+	<!-- Animate icon -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/animate.css">
 
-    <!-- Icons -->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/fontawesome.css">
+	<!-- Themify icon -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/themify-icons.css">
 
-    <!--Slick slider css-->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/slick.css">
-    <link rel="stylesheet" type="text/css" href="~/assets/css/slick-theme.css">
+	<!-- Bootstrap css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/bootstrap.css">
 
-    <!-- Animate icon -->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/animate.css">
+	<!-- Font Awesome (CDN) -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-    <!-- Themify icon -->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/themify-icons.css">
+	<!-- Theme css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/color1.css" media="screen" id="color">
 
-    <!-- Bootstrap css -->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/bootstrap.css">
+	<style>
+		/* Navbar gradient */
+		.navbar-custom {
+			background: linear-gradient(90deg, #ff6f61, #ffcc70, #6a82fb);
+		}
 
-    <!-- Theme css -->
-    <link rel="stylesheet" type="text/css" href="~/assets/css/color1.css" media="screen" id="color">
-    <style>
-        /* Navbar gradient */
-        .navbar-custom {
-            background: linear-gradient(90deg, #ff6f61, #ffcc70, #6a82fb);
-        }
+			.navbar-custom .nav-link,
+			.navbar-custom .navbar-brand {
+				color: white !important;
+				font-weight: 600;
+			}
 
-            .navbar-custom .nav-link,
-            .navbar-custom .navbar-brand {
-                color: white !important;
-                font-weight: 600;
-            }
+				.navbar-custom .nav-link:hover {
+					text-decoration: underline;
+				}
 
-                .navbar-custom .nav-link:hover {
-                    text-decoration: underline;
-                }
+		/* Hero Section */
+		.hero {
+			background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4);
+			padding: 50px 20px;
+			text-align: center;
+			border-radius: 12px;
+			color: #333;
+			margin-bottom: 20px;
+		}
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4);
-            padding: 50px 20px;
-            text-align: center;
-            border-radius: 12px;
-            color: #333;
-            margin-bottom: 20px;
-        }
+			.hero h1 {
+				font-size: 3rem;
+				font-weight: bold;
+			}
 
-            .hero h1 {
-                font-size: 3rem;
-                font-weight: bold;
-            }
+			.hero p {
+				font-size: 1.2rem;
+				margin-bottom: 15px;
+			}
 
-            .hero p {
-                font-size: 1.2rem;
-                margin-bottom: 15px;
-            }
+		/* Buttons */
+		.btn-ushop {
+			background: linear-gradient(90deg, #ff6f61, #6a82fb);
+			color: white;
+			border: none;
+			border-radius: 25px;
+			padding: 10px 25px;
+			font-weight: bold;
+			transition: 0.3s;
+		}
 
-        /* Buttons */
-        .btn-ushop {
-            background: linear-gradient(90deg, #ff6f61, #6a82fb);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 25px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
+			.btn-ushop:hover {
+				background: linear-gradient(90deg, #6a82fb, #ff6f61);
+				transform: scale(1.05);
+			}
 
-            .btn-ushop:hover {
-                background: linear-gradient(90deg, #6a82fb, #ff6f61);
-                transform: scale(1.05);
-            }
+		/* Footer */
+		footer {
+			background: linear-gradient(90deg, #6a82fb, #ffcc70);
+			color: white;
+			padding: 15px 0;
+			text-align: center;
+			font-weight: 500;
+		}
 
-        /* Footer */
-        footer {
-            background: linear-gradient(90deg, #6a82fb, #ffcc70);
-            color: white;
-            padding: 15px 0;
-            text-align: center;
-            font-weight: 500;
-        }
-
-            footer a {
-                color: #ffe;
-                text-decoration: underline;
-            }
-    </style>
+			footer a {
+				color: #ffe;
+				text-decoration: underline;
+			}
+	</style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-custom shadow-sm">
-            <div class="container-fluid">
-              
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">🛒 UShop</a>
-                <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
-                    <ul class="navbar-nav">
-                        <li class="nav-item"><Li class="nav-link"> @await Html.PartialAsync("_SearchBar")</li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Products</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index">Customers</a></li>
-                       <a class="nav-link text-dark" asp-area="" asp-controller="Seller" asp-action="Browse">Sellers</a>
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-custom shadow-sm">
+			<div class="container-fluid">
+				<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">🛒 UShop</a>
+				<button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+					<ul class="navbar-nav me-auto">
+						<li class="nav-item">
+							@await Html.PartialAsync("_SearchBar")
+						</li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Products</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index">Customers</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Seller" asp-action="Browse">Sellers</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index">Category</a></li>
+						<li class="nav-item"><a class="nav-link fw-bold" asp-controller="Product" asp-action="All">All Products</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">Cart</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admins</a></li>
+					</ul>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Category" asp-action="Index">Category</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" asp-controller="Product" asp-action="All"> Products</a>
-                        </li>
+					<!-- User Dropdown Menu -->
+					@await Html.PartialAsync("_UserMenu")
 
-                        <li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">Cart</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admins</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
-                      
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-   
 
-    <!-- Hero Section -->
-    <div class="container mt-3">
-        
+				</div>
+			</div>
+		</nav>
+	</header>
 
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+	<!-- Main Content -->
+	<div class="container mt-3">
+		<main role="main" class="pb-3">
+			@RenderBody()
+		</main>
+	</div>
 
-    <footer>
-        <div class="container">
-            &copy; 2025 - UShop | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
-        </div>
-    </footer>
+	<footer>
+		<div class="container">
+			&copy; 2025 - UShop | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+		</div>
+	</footer>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,28 +1,46 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using UShop.Data;
 using UShop.Models;
 
 namespace UshopFront.Controllers
 {
+	[Authorize]
 	public class AccountController : Controller
 	{
-		// GET: /Account/Login
-		public IActionResult Login()
+		private readonly UserManager<User> _userManager;
+		private readonly SignInManager<User> _signInManager;
+		private readonly UShopDBContext _context;
+
+		public AccountController(
+			UserManager<User> userManager,
+			SignInManager<User> signInManager,
+			UShopDBContext context)
 		{
-			return View();
+			_userManager = userManager;
+			_signInManager = signInManager;
+			_context = context;
 		}
 
-		// POST: /Account/Login
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Login(Login model)
-		{
-			if (!ModelState.IsValid)
-			{
-				return View(model);
-			}
+		// ------------------------------
+		// LOGIN
+		// ------------------------------
+		[AllowAnonymous]
+		public IActionResult Login() => View();
 
-			// Placeholder login check
-			if (model.Email == "admin@example.com" && model.Password == "123")
+		[HttpPost]
+		[AllowAnonymous]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Login(Login model)
+		{
+			if (!ModelState.IsValid) return View(model);
+
+			var result = await _signInManager.PasswordSignInAsync(
+				model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+
+			if (result.Succeeded)
 			{
 				TempData["Message"] = "Login successful!";
 				return RedirectToAction("Index", "Home");
@@ -32,24 +50,172 @@ namespace UshopFront.Controllers
 			return View(model);
 		}
 
-		// GET: /Account/Register
-		public IActionResult Register()
-		{
-			return View();
-		}
+		// ------------------------------
+		// REGISTER
+		// ------------------------------
+		[AllowAnonymous]
+		public IActionResult Register() => View();
 
-		// POST: /Account/Register
 		[HttpPost]
+		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public IActionResult Register(Register model)
+		public async Task<IActionResult> Register(Register model)
 		{
-			if (!ModelState.IsValid)
+			if (!ModelState.IsValid) return View(model);
+
+			var user = new User
 			{
-				return View(model);
+				UserName = model.Email,
+				Email = model.Email,
+				UserType = model.UserType
+			};
+
+			var result = await _userManager.CreateAsync(user, model.Password);
+
+			if (result.Succeeded)
+			{
+				// Assign role based on UserType
+				await _userManager.AddToRoleAsync(user, model.UserType.ToString());
+
+				// Create profile entity
+				switch (model.UserType)
+				{
+					case UserType.Admin:
+						_context.Admins.Add(new Admin
+						{
+							FullName = model.FullName,
+							Email = model.Email,
+							Description = "New admin account",
+							User = user
+						});
+						break;
+
+					case UserType.Customer:
+						_context.Customers.Add(new Customer
+						{
+							FullName = model.FullName,
+							Email = model.Email,
+							User = user
+						});
+						break;
+
+					case UserType.Seller:
+						_context.Sellers.Add(new Seller
+						{
+							FullName = model.FullName,
+							Email = model.Email,
+							User = user
+						});
+						break;
+				}
+
+				await _context.SaveChangesAsync();
+				await _signInManager.SignInAsync(user, isPersistent: false);
+				TempData["Message"] = "Registration successful!";
+				return RedirectToAction("Index", "Home");
 			}
 
-			// Fake success message (no database yet)
-			TempData["Message"] = "Registration successful! Please login.";
+			foreach (var error in result.Errors)
+				ModelState.AddModelError(string.Empty, error.Description);
+
+			return View(model);
+		}
+
+		// ------------------------------
+		// PROFILE
+		// ------------------------------
+		public async Task<IActionResult> Profile()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null) return RedirectToAction("Login");
+
+			// load profile based on user type
+			switch (user.UserType)
+			{
+				case UserType.Admin:
+					var admin = await _context.Admins.FirstOrDefaultAsync(a => a.User!.Id == user.Id);
+					return View("AdminProfile", admin);
+
+				case UserType.Customer:
+					var customer = await _context.Customers
+						.Include(c => c.Cart)
+						.Include(c => c.Orders)
+						.FirstOrDefaultAsync(c => c.User!.Id == user.Id);
+					return View("CustomerProfile", customer);
+
+				case UserType.Seller:
+					var seller = await _context.Sellers
+						.Include(s => s.Products)
+						.FirstOrDefaultAsync(s => s.User!.Id == user.Id);
+					return View("SellerProfile", seller);
+
+				default:
+					return NotFound("Profile not found");
+			}
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> EditProfile()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null) return RedirectToAction("Login");
+
+			return user.UserType switch
+			{
+				UserType.Admin => View("EditAdminProfile", await _context.Admins.FirstOrDefaultAsync(a => a.User!.Id == user.Id)),
+				UserType.Customer => View("EditCustomerProfile", await _context.Customers.FirstOrDefaultAsync(c => c.User!.Id == user.Id)),
+				UserType.Seller => View("EditSellerProfile", await _context.Sellers.FirstOrDefaultAsync(s => s.User!.Id == user.Id)),
+				_ => NotFound("Profile not found")
+			};
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> EditAdminProfile(Admin model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			_context.Admins.Update(model);
+			await _context.SaveChangesAsync();
+			return RedirectToAction("Profile");
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> EditCustomerProfile(Customer model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			_context.Customers.Update(model);
+			await _context.SaveChangesAsync();
+			return RedirectToAction("Profile");
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> EditSellerProfile(Seller model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			_context.Sellers.Update(model);
+			await _context.SaveChangesAsync();
+			return RedirectToAction("Profile");
+		}
+
+		// ------------------------------
+		// LOGOUT
+		// ------------------------------
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Logout()
+		{
+			await _signInManager.SignOutAsync();
+			TempData["Message"] = "You have been logged out.";
+			return RedirectToAction("Login");
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> LogoutGet()
+		{
+			await _signInManager.SignOutAsync();
+			TempData["Message"] = "You have been logged out.";
 			return RedirectToAction("Login");
 		}
 	}

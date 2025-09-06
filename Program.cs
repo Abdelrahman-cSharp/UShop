@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using UShop.Data;
 using UShop.Models;
 
@@ -9,13 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add MVC controllers with views
 builder.Services.AddControllersWithViews();
 
-// Stripe Configurations
-
-// Add DbContext (your application context)
+// Add DbContext
 builder.Services.AddDbContext<UShopDBContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add Identity (using EF Core with your DbContext)
+// Add Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
 	options.Password.RequireDigit = true;
@@ -26,10 +23,9 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<UShopDBContext>()
 .AddDefaultTokenProviders();
 
-
 var app = builder.Build();
 
-// Configure middleware
+// Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
 	app.UseExceptionHandler("/Home/Error");
@@ -37,39 +33,22 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseRouting();
-//--------------TO BE DELETED-----testing without login------------------------
-app.Use(async (context, next) =>
+
+using (var scope = app.Services.CreateScope())
 {
-	// Fake login user with ID = 1
-	var claims = new List<Claim>
-	 {
-		  new Claim(ClaimTypes.NameIdentifier, "1"),
-		  new Claim(ClaimTypes.Name, "TestUser"),
-		  new Claim(ClaimTypes.Email, "test@example.com")
-	 };
+	var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+	await DataSeeder.SeedRolesAsync(roleManager);
+}
 
-	var identity = new ClaimsIdentity(claims, "FakeAuth");
-	context.User = new ClaimsPrincipal(identity);
-
-	await next();
-});
-
-//-------------------------------------------
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
-
-// Default route
+// MVC route
 app.MapControllerRoute(
 	name: "default",
-	pattern: "{controller=Home}/{action=Index}/{id?}")
-	.WithStaticAssets();
-
+	pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
