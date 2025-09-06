@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using UShop.Data;
 using UShop.Models;
 
@@ -19,7 +20,7 @@ namespace UShop.Controllers
 		// GET: Orders
 		public async Task<IActionResult> Index()
 		{
-			var customerId = 1; // TODO: replace with logged-in user ID
+			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 			var orders = await _context.Orders
 				 .Where(o => o.CustomerId == customerId) // only logged-in user's orders
 				 .Include(o => o.Customer)
@@ -33,7 +34,7 @@ namespace UShop.Controllers
 		// GET: Orders/Details/5
 		public async Task<IActionResult> Details(int id)
 		{
-			var customerId = 1; // TODO: replace with logged-in user ID
+			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 			var order = await _context.Orders
 				 .Where(o => o.CustomerId == customerId) // secure: user can only access own order
 				 .Include(o => o.Customer)
@@ -289,5 +290,10 @@ namespace UShop.Controllers
 
 			return View(order);
 		}
+		
+
+
 	}
+
+
 }
