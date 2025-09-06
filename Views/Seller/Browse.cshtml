@@ -1,37 +1,160 @@
 ﻿@model IEnumerable<UShop.Models.Seller>
-
 @{
     ViewData["Title"] = "Browse Sellers";
 }
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4 fw-bold text-primary">👨‍💼 Our Sellers</h2>
+@functions {
+    private static string GetRandomGradient()
+    {
+        var gradients = new[] { 
+            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+        };
+        var rand = new Random();
+        return gradients[rand.Next(gradients.Length)];
+    }
+}
 
-    <div class="row">
-        @foreach (var seller in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm border-0 text-center p-3">
-                    <img src="~/images/seller-avatar.png"
-                         alt="@seller.FullName"
-                         class="rounded-circle mb-3"
-                         style="width:100px;height:100px;object-fit:cover;" />
+<style>
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
 
-                    <h5 class="fw-bold">@seller.FullName</h5>
-                    <p class="text-muted">@seller.Email</p>
-                    @if (!string.IsNullOrEmpty(seller.PhoneNumber))
-                    {
-                        <p><i class="fa-solid fa-phone me-2 text-success"></i>@seller.PhoneNumber</p>
-                    }
-                    <p class="fw-semibold text-primary">
-                        Products: @seller.Products.Count
-                    </p>
-                    <a asp-controller="Product" asp-action="BySeller" asp-route-sellerId="@seller.Id"
-                       class="btn btn-outline-primary fw-bold">
-                        View Products
-                    </a>
-                </div>
-            </div>
-        }
-    </div>
+.sellers-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.page-subtitle {
+    color: rgba(255,255,255,0.8);
+    margin-top: 0.5rem;
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.75rem 1rem;
+    border-radius: 50px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+}
+
+.sellers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.seller-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 1.8rem 1rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.seller-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.seller-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.seller-email, .seller-phone {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.25rem;
+}
+
+.seller-products-count {
+    margin-top: 1rem;
+    font-weight: 600;
+}
+</style>
+
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="sellerSearch" placeholder="Search for a seller..." class="search-input" />
 </div>
+
+<div class="sellers-container">
+    <div class="page-header">
+        <h1 class="page-title">Our Sellers</h1>
+        <p class="page-subtitle">Meet our amazing community of trusted sellers</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="sellers-grid">
+            @foreach (var seller in Model)
+            {
+                var productCount = seller.Products?.Count ?? 0;
+                var gradient = GetRandomGradient();
+
+                <a  asp-controller="Product" asp-action="BySeller" asp-route-sellerId="@seller.Id" style="text-decoration:none;">
+                    <div class="seller-card" style="background:@gradient;">
+                        <h3 class="seller-name">@seller.FullName</h3>
+                        <p class="seller-email"><i class="fas fa-envelope"></i> @seller.Email</p>
+                        @if (!string.IsNullOrEmpty(seller.PhoneNumber))
+                        {
+                            <p class="seller-phone"><i class="fas fa-phone"></i> @seller.PhoneNumber</p>
+                        }
+                        <p class="seller-products-count">@productCount Products Available</p>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state" style="text-align:center; color:white; margin-top:3rem;">
+            <h3>No Sellers Found</h3>
+            <p>We couldn't find any sellers matching your search.</p>
+        </div>
+    }
+</div>
+
+<script>
+document.getElementById('sellerSearch').addEventListener('input', function() {
+    var query = this.value.toLowerCase();
+    document.querySelectorAll('.seller-card').forEach(function(card) {
+        var name = card.querySelector('.seller-name').textContent.toLowerCase();
+        var email = card.querySelector('.seller-email').textContent.toLowerCase();
+        if(name.includes(query) || email.includes(query)) {
+            card.parentElement.style.display = 'block';
+        } else {
+            card.parentElement.style.display = 'none';
+        }
+    });
+});
+</script>
