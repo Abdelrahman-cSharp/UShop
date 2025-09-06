@@ -30,9 +30,14 @@ namespace UShop.Models
 		[RegularExpression(@"^\d{3}$", ErrorMessage = "CVV must be 3 digits.")]
 		public string CVV { get; set; }
 
-		[ForeignKey("Customer"), Required]
+		[ForeignKey("Customer")]
 		public int? CustomerId { get; set; }
 		[ValidateNever]
 		public Customer? Customer { get; set; }
+
+		[ForeignKey("Seller")]
+		public int? SellerId { get; set; }
+		[ValidateNever]
+		public Seller? Seller { get; set; }
 	}
 }

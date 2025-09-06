@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
@@ -8,9 +10,20 @@ namespace UShop.Models
 		[Required]
 		public UserType UserType { get; set; } // Admin or Customer
 
-		//// Navigation properties
-		//public int? AdminId { get; set; }
-		//public int? CustomerId { get; set; }
-		//public int? SellerId { get; set; }
+		// Navigation properties
+		[ForeignKey("Admin")]
+		public int? AdminId { get; set; }
+		[ValidateNever]
+		public Admin? Admin { get; set; }
+
+		[ForeignKey("Customer")]
+		public int? CustomerId { get; set; }
+		[ValidateNever]
+		public Customer? Customer { get; set; }
+
+		[ForeignKey("Seller")]
+		public int? SellerId { get; set; }
+		[ValidateNever]
+		public Seller? Seller { get; set; }
 	}
 }

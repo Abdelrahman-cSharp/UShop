@@ -23,6 +23,9 @@ namespace UShop.Models
 
 		// Relationships
 		[ValidateNever]
+		public User? User { get; set; }
+
+		[ValidateNever]
 		public Cart? Cart { get; set; }
 
 		[ValidateNever]
