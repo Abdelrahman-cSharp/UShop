@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using UShop.Data;
 using UShop.Models;
 
@@ -19,7 +20,7 @@ namespace UShop.Controllers
 		// GET: Orders
 		public async Task<IActionResult> Index()
 		{
-			var customerId = 1; // TODO: replace with logged-in user ID
+			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value); // TODO: replace with logged-in user ID
 			var orders = await _context.Orders
 				 .Where(o => o.CustomerId == customerId) // only logged-in user's orders
 				 .Include(o => o.Customer)
