@@ -1,0 +1,31 @@
+﻿@model IEnumerable<Product>
+
+<!-- Products Grid -->
+<div class="div1">
+	@if (Model.Any())
+	{
+		foreach (var product in Model)
+		{
+			<div class="product-card-wrapper">
+				@await Html.PartialAsync("_ProductCard", product)
+			</div>
+		}
+	}
+	else
+	{
+		<div class="no-products">
+			<i class="fas fa-exclamation-circle"></i> No products found for your search.
+		</div>
+	}
+</div>
+
+<style>
+	.div1 {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 20px;
+	}
+
+	
+</style>

@@ -7,12 +7,12 @@ using UShop.Models.ViewModels;
 
 namespace UShop.Controllers
 {
-	public class ProductController : Controller
+	public class ProductsController : Controller
 	{
 		private readonly UShopDBContext _context;
 		private readonly IWebHostEnvironment _webHostEnvironment;
 
-		public ProductController(UShopDBContext context, IWebHostEnvironment webHostEnvironment)
+		public ProductsController(UShopDBContext context, IWebHostEnvironment webHostEnvironment)
 		{
 			_context = context;
 			_webHostEnvironment = webHostEnvironment;

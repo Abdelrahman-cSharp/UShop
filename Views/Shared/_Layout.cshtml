@@ -28,13 +28,13 @@
 				<li><a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link active"><i class="fas fa-home"></i>Home</a></li>
 				<li><a asp-area="" asp-controller="Seller" asp-action="Browse" class="nav-link"><i class="fas fa-store"></i>Sellers</a></li>
 				<li><a asp-area="" asp-controller="Category" asp-action="Browse" class="nav-link"><i class="fas fa-list"></i>Categories</a></li>
-				<li><a asp-area="" asp-controller="Product" asp-action="All" class="nav-link"><i class="fas fa-tag"></i>Products</a></li>
+				<li><a asp-area="" asp-controller="Products" asp-action="Index" class="nav-link"><i class="fas fa-tag"></i>Products</a></li>
 				<li><a href="#" class="nav-link"><i class="fas fa-percent"></i>Deals</a></li>
 			</ul>
 
 			<!-- Search Bar -->
 			<div class="search-container">
-				<form asp-controller="Product" asp-action="Index" method="get" class="d-flex">
+				<form asp-controller="Products" asp-action="Index" method="get" class="d-flex">
 					<input type="text"
 						   placeholder="Search for products, brands, and more..."
 						   name="searchString"
