@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using UShop.Data;
 using UShop.Models;
 
@@ -11,25 +11,36 @@ namespace UShop.Controllers
 	public class CartController : Controller
 	{
 		private readonly UShopDBContext _context;
+		private readonly UserManager<User> _userManager;
 
-		public CartController(UShopDBContext context)
+		public CartController(UShopDBContext context, UserManager<User> userManager)
 		{
 			_context = context;
+			_userManager = userManager;
+		}
+
+		// helper to get the current logged-in customer's id
+		private async Task<int?> GetCustomerIdAsync()
+		{
+			var user = await _userManager.GetUserAsync(User);
+			return user?.CustomerId;
 		}
 
 		// GET: Cart
 		public async Task<IActionResult> Index()
 		{
-			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+			var customerId = await GetCustomerIdAsync();
+			if (customerId == null)
+				return Unauthorized();
 
 			var cart = await _context.Carts
-				 .Include(c => c.Items)
-					  .ThenInclude(i => i.Product)
-				 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+				.Include(c => c.Items)
+					.ThenInclude(i => i.Product)
+				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
 			if (cart == null)
 			{
-				cart = new Cart { CustomerId = customerId };
+				cart = new Cart { CustomerId = customerId.Value };
 				_context.Carts.Add(cart);
 				await _context.SaveChangesAsync();
 			}
@@ -41,14 +52,17 @@ namespace UShop.Controllers
 		[HttpPost]
 		public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
 		{
-			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+			var customerId = await GetCustomerIdAsync();
+			if (customerId == null)
+				return Unauthorized();
+
 			var cart = await _context.Carts
-				 .Include(c => c.Items)
-				 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+				.Include(c => c.Items)
+				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
 			if (cart == null)
 			{
-				cart = new Cart { CustomerId = customerId };
+				cart = new Cart { CustomerId = customerId.Value };
 				_context.Carts.Add(cart);
 				await _context.SaveChangesAsync();
 			}
@@ -107,11 +121,14 @@ namespace UShop.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Checkout()
 		{
-			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+			var customerId = await GetCustomerIdAsync();
+			if (customerId == null)
+				return Unauthorized();
+
 			var cart = await _context.Carts
-				 .Include(c => c.Items).ThenInclude(i => i.Product)
-				 .Include(c => c.Customer).ThenInclude(c => c.CreditCard)
-				 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+				.Include(c => c.Items).ThenInclude(i => i.Product)
+				.Include(c => c.Customer).ThenInclude(c => c.CreditCard)
+				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
 			if (cart == null || !cart.Items.Any())
 			{
@@ -121,7 +138,7 @@ namespace UShop.Controllers
 
 			var order = new Order
 			{
-				CustomerId = customerId,
+				CustomerId = customerId.Value,
 				Customer = cart.Customer,
 				Items = cart.Items.ToList(),
 				OrderDate = DateTime.Now
@@ -134,14 +151,14 @@ namespace UShop.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Checkout(Order order)
 		{
-
-			// Get the logged-in user ID
-			var customerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+			var customerId = await GetCustomerIdAsync();
+			if (customerId == null)
+				return Unauthorized();
 
 			var cart = await _context.Carts
-				 .Include(c => c.Items).ThenInclude(i => i.Product)
-				 .Include(c => c.Customer).ThenInclude(c => c.CreditCard)
-				 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+				.Include(c => c.Items).ThenInclude(i => i.Product)
+				.Include(c => c.Customer).ThenInclude(c => c.CreditCard)
+				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
 			if (cart == null || !cart.Items.Any())
 			{
@@ -179,7 +196,7 @@ namespace UShop.Controllers
 			// Create the order
 			var newOrder = new Order
 			{
-				CustomerId = customerId,
+				CustomerId = customerId.Value,
 				OrderDate = DateTime.Now,
 				Status = OrderStatus.Pending,
 				PaymentMethod = order.PaymentMethod,
