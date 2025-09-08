@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UShop.Models
 {
@@ -15,6 +16,9 @@ namespace UShop.Models
 		public string? Description { get; set; }
 
 		public string? ImageUrl { get; set; }
+
+		[NotMapped]
+		public IFormFile? ImageFile { get; set; }
 
 
 		public ICollection<Product> Products { get; set; } = new List<Product>();

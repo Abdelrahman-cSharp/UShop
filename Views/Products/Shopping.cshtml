@@ -25,7 +25,7 @@
     <h2 class="text-center mb-4 fw-bold text-primary">🛍️ All Products</h2>
 
     <!-- 🔎 Search bar + Category filter -->
-    <form asp-controller="Product" asp-action="All" method="get" class="row mb-4">
+    <form asp-controller="Products" asp-action="All" method="get" class="row mb-4">
         <div class="col-md-6">
             <input type="text" name="searchString" value="@searchString"
                    class="form-control" placeholder="Search product by name..." />
@@ -50,7 +50,7 @@
             <button type="submit" class="btn btn-primary fw-bold flex-fill">Filter</button>
 
             <!-- Reset button (clears filters and shows all products) -->
-            <a asp-controller="Product" asp-action="All"
+            <a asp-controller="Products" asp-action="All"
                class="btn btn-secondary fw-bold flex-fill">
                 Reset
             </a>
@@ -72,7 +72,7 @@
                         <h5 class="card-title fw-bold">@product.Name</h5>
                         <p class="text-muted">@product.Category?.Name</p>
                         <p class="fw-bold text-success">$@product.Price</p>
-                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id"
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id"
                            class="btn btn-primary btn-sm fw-bold">
                             View Details
                         </a>

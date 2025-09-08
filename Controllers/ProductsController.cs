@@ -69,7 +69,6 @@ namespace UShop.Controllers
 			}
 		}
 
-		[Authorize]
 		public async Task<IActionResult> Shopping(string searchString, int? categoryId)
 		{
 			try
@@ -87,6 +86,7 @@ namespace UShop.Controllers
 					products = products.Where(p => p.CategoryId == categoryId);
 					ViewData["CurrentCategory"] = categoryId;
 				}
+				ViewBag.SearchString = searchString; // keep value for input
 
 				// Setup category list for filter
 				ViewBag.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name");

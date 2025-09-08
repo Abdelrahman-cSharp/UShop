@@ -1,6 +1,7 @@
 ﻿<!--Search -->
-<form asp-controller="Product" asp-action="All" method="get" class="search-bar ms-auto">
-    <input type="text" name="searchString" placeholder="Search products..." />
+<form asp-controller="Products" asp-action="shopping" method="get" class="search-bar ms-auto">
+    <input type="text" name="searchString" placeholder="Search products..."
+           value="@(ViewBag.SearchString ?? "")" />
     <button type="submit">
         <i class="fas fa-search"></i>
     </button>

@@ -3,15 +3,16 @@
 @inject UserManager<User> UserManager
 
 @{
+	var user = await UserManager.GetUserAsync(User);
 	var currentUser = await UserManager.GetUserAsync(User);
-	var userName = currentUser?.UserName;
-	if (currentUser.UserType == UserType.Seller)
-		userName = currentUser?.Seller?.FullName;
-	else if (currentUser.UserType == UserType.Admin)
-		userName = currentUser?.Admin?.FullName;
-	else if (currentUser.UserType == UserType.Customer)
-		userName = currentUser?.Customer?.FullName;
 
+	var userName = currentUser?.UserType switch
+	{
+		UserType.Seller => currentUser.Seller?.FullName ?? currentUser.UserName,
+		UserType.Admin => currentUser.Admin?.FullName ?? currentUser.UserName,
+		UserType.Customer => currentUser.Customer?.FullName ?? currentUser.UserName,
+		_ => currentUser?.UserName
+	};
 
 }
 
@@ -47,6 +48,11 @@
 						</a>
 					</li>
 				}
+				<li>
+					<a class="dropdown-item py-2" asp-controller="Orders" asp-action="Index">
+						<i class="fas fa-id-card me-2"></i> My Orders
+					</a>
+				</li>
 				<li>
 					<form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
 						<button type="submit" class="dropdown-item text-danger fw-semibold">
