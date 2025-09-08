@@ -1,172 +1,169 @@
 ﻿@model UShop.Models.Product
 @{
-	ViewData["Title"] = "Product Details";
+    ViewData["Title"] = "Product Details";
 }
 
 <style>
-	.rating i {
-		margin-right: 2px;
-	}
+    .rating i {
+        margin-right: 2px;
+    }
 
-	.thumbs img {
-		cursor: pointer;
-		border: 1px solid #eee;
-		border-radius: .5rem;
-	}
+    .thumbs img {
+        cursor: pointer;
+        border: 1px solid #eee;
+        border-radius: .5rem;
+    }
 
-		.thumbs img.active {
-			border-color: #0d6efd;
-		}
+        .thumbs img.active {
+            border-color: #0d6efd;
+        }
 </style>
 
 <div class="container my-5">
-	<!-- Breadcrumb -->
-	<nav aria-label="breadcrumb">
-		<ol class="breadcrumb">
-			<li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-			<li class="breadcrumb-item">
-				<a asp-controller="Products" asp-action="ByCategory" asp-route-categoryId="@Model.CategoryId">
-					@Model.Category?.Name
-				</a>
-			</li>
-			<li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
-		</ol>
-	</nav>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Products" asp-action="ByCategory" asp-route-categoryId="@Model.CategoryId">
+                    @Model.Category?.Name
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
 
-	<div class="row g-4">
-		<!-- الصور -->
-		<div class="col-lg-5">
-			<div class="card shadow-sm border-0">
-				<img id="mainImage"
-					 src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
-					 class="card-img-top" alt="@Model.Name" />
-			</div>
+    <div class="row g-4">
+        <!-- Product Images -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <img id="mainImage"
+                     src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
+                     class="card-img-top" alt="@Model.Name" />
+            </div>
 
+            <div class="thumbs d-flex gap-3 mt-3">
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
+                     class="img-fluid active" style="width:80px;height:80px;object-fit:cover;"
+                     onclick="swapImage(this)">
+            </div>
+        </div>
 
-			<div class="thumbs d-flex gap-3 mt-3">
-				<img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/placeholder.png" : Model.ImageUrl)"
-					 class="img-fluid active" style="width:80px;height:80px;object-fit:cover;"
-					 onclick="swapImage(this)">
+        <div class="col-lg-7">
+            <h1 class="fw-bold">@Model.Name</h1>
 
-			</div>
-		</div>
+            <div class="d-flex align-items-center gap-3 mt-2">
+                <div class="rating text-warning">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
+                <span class="text-muted">(120 reviews)</span>
+            </div>
 
+            <div class="mt-3">
+                <h3 class="text-success fw-bold mb-0">$@Model.Price</h3>
+                <small class="text-muted">VAT included</small>
+            </div>
 
-		<div class="col-lg-7">
-			<h1 class="fw-bold">@Model.Name</h1>
+            <hr />
 
-			<div class="d-flex align-items-center gap-3 mt-2">
-				<div class="rating text-warning">
-					<i class="fa-solid fa-star"></i>
-					<i class="fa-solid fa-star"></i>
-					<i class="fa-solid fa-star"></i>
-					<i class="fa-solid fa-star"></i>
-					<i class="fa-regular fa-star"></i>
-				</div>
-				<span class="text-muted">(120 reviews)</span>
-			</div>
+            <p class="text-muted fs-6">@Model.Description</p>
 
-			<div class="mt-3">
-				<h3 class="text-success fw-bold mb-0">$@Model.Price</h3>
-				<small class="text-muted">VAT included</small>
-			</div>
+            <div class="d-flex align-items-center gap-3 mt-3">
+                <span class="fw-semibold">Stock:</span>
+                @if (Model.StockQuantity > 0)
+                {
+                    <span class="badge bg-success">In Stock (@Model.StockQuantity)</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Out of Stock</span>
+                }
+            </div>
 
-			<hr />
+            <div class="mt-4 d-flex align-items-center gap-3">
+                <label class="fw-semibold" for="quantity">Quantity</label>
+                <input id="quantity" name="quantity" type="number" min="1"
+                       max="@(Model.StockQuantity > 0 ? Model.StockQuantity : 1)"
+                       value="1" class="form-control w-auto" />
+            </div>
 
-			<p class="text-muted fs-6">@Model.Description</p>
+            <div class="mt-3">
+                <span class="fw-semibold">Seller: </span>
+                <a asp-controller="Products" asp-action="BySeller" asp-route-sellerId="@Model.SellerId" class="text-decoration-none fw-bold text-primary">
+                    @Model.Seller?.FullName
+                </a>
+            </div>
 
-			<div class="d-flex align-items-center gap-3 mt-3">
-				<span class="fw-semibold">Stock:</span>
-				@if (Model.StockQuantity > 0)
-				{
-					<span class="badge bg-success">In Stock (@Model.StockQuantity)</span>
-				}
-				else
-				{
-					<span class="badge bg-danger">Out of Stock</span>
-				}
-			</div>
+            <div class="mt-4 d-flex flex-wrap gap-3">
+                <!-- Add to Cart -->
+                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" id="addToCartQuantity" name="quantity" value="1" />
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa-solid fa-cart-plus me-1"></i> Add to Cart
+                    </button>
+                </form>
 
-			<div class="mt-4 d-flex align-items-center gap-3">
-				<label class="fw-semibold" for="qty">Quantity</label>
-				<input id="qty" name="quantity" type="number" min="1"
-					   max="@(Model.StockQuantity > 0 ? Model.StockQuantity : 1)"
-					   value="1" class="form-control w-auto" />
-			</div>
-			<div class="mt-3">
-				<span class="fw-semibold">Seller: </span>
-				<a asp-controller="Products" asp-action="BySeller" asp-route-sellerId="@Model.SellerId" class="text-decoration-none fw-bold text-primary">
-					@Model.Seller?.FullName
-				</a>
-			</div>
+                <!-- Buy Now -->
+                <form asp-controller="Cart" asp-action="BuyNow" method="get" class="d-inline">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" id="buyNowQuantity" name="quantity" value="1" />
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fa-solid fa-bolt me-1"></i> Buy Now
+                    </button>
+                </form>
+            </div>
 
-			<div class="mt-4 d-flex flex-wrap gap-3">
-				<!-- Add to Cart -->
-				<form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
-					@Html.AntiForgeryToken()
-					<input type="hidden" name="productId" value="@Model.Id" />
-					<input type="hidden" name="quantity" id="hiddenQty" value="1" />
-					<button type="submit" class="btn btn-primary btn-lg">
-						<i class="fa-solid fa-cart-plus me-1"></i> Add to Cart
-					</button>
-				</form>
+            <hr class="my-4" />
 
-				<!-- Buy Now -->
-				<form asp-controller="Cart" asp-action="Checkout" method="post" class="d-inline">
-					@Html.AntiForgeryToken()
-					<input type="hidden" name="productId" value="@Model.Id" />
-					<input type="hidden" name="quantity" id="hiddenQty2" value="1" />
-					<button type="submit" class="btn btn-success btn-lg">
-						<i class="fa-solid fa-bolt me-1"></i> Buy Now
-					</button>
-				</form>
-			</div>
+            <ul class="list-unstyled small text-muted">
+                <li><i class="fa-solid fa-truck-fast me-2"></i>Fast delivery</li>
+                <li><i class="fa-solid fa-rotate-left me-2"></i>14-day returns</li>
+                <li><i class="fa-solid fa-shield-halved me-2"></i>Secure payments</li>
+            </ul>
+        </div>
+    </div>
 
-			<hr class="my-4" />
-
-			<ul class="list-unstyled small text-muted">
-				<li><i class="fa-solid fa-truck-fast me-2"></i>Fast delivery</li>
-				<li><i class="fa-solid fa-rotate-left me-2"></i>14-day returns</li>
-				<li><i class="fa-solid fa-shield-halved me-2"></i>Secure payments</li>
-			</ul>
-		</div>
-	</div>
-
-
-	<div class="mt-5">
-		<h4 class="fw-bold mb-3">You may also like</h4>
-		<div class="row g-4">
-
-			<div class="col-md-3">
-				<div class="card h-100 border-0 shadow-sm">
-					<img src="/images/sample1.jpg" class="card-img-top" alt="Similar product">
-					<div class="card-body">
-						<h6 class="card-title">Sample Product</h6>
-						<p class="fw-bold text-success mb-0">$29.99</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="mt-5">
+        <h4 class="fw-bold mb-3">You may also like</h4>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="/images/sample1.jpg" class="card-img-top" alt="Similar product">
+                    <div class="card-body">
+                        <h6 class="card-title">Sample Product</h6>
+                        <p class="fw-bold text-success mb-0">$29.99</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet"
-	  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <script>
-	const qtyInput = document.getElementById('qty');
-	const hiddenQty = document.getElementById('hiddenQty');
-	const hiddenQty2 = document.getElementById('hiddenQty2');
-	function syncQty() {
-		hiddenQty.value = qtyInput.value;
-		hiddenQty2.value = qtyInput.value;
-	}
-	qtyInput.addEventListener('input', syncQty);
-	syncQty();
+    const quantityInput = document.getElementById('quantity');
+    const addToCartQty = document.getElementById('addToCartQuantity');
+    const buyNowQty = document.getElementById('buyNowQuantity');
 
-	function swapImage(img) {
-		document.getElementById('mainImage').src = img.src;
-		document.querySelectorAll('.thumbs img').forEach(t => t.classList.remove('active'));
-		img.classList.add('active');
-	}
+    // Sync the quantity input with both forms
+    quantityInput.addEventListener('input', () => {
+        addToCartQty.value = quantityInput.value;
+        buyNowQty.value = quantityInput.value;
+    });
+</script>
+
+<script>
+    function swapImage(img) {
+        document.getElementById('mainImage').src = img.src;
+        document.querySelectorAll('.thumbs img').forEach(t => t.classList.remove('active'));
+        img.classList.add('active');
+    }
 </script>
