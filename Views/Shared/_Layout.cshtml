@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using UShop.Data
 @using UShop.Models
 <!DOCTYPE html>
 <html lang="en">
@@ -123,15 +124,61 @@
 						<li class="nav-item">
 							@await Html.PartialAsync("_SearchBar")
 						</li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">Products</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Customer" asp-action="Index">Customers</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Seller" asp-action="Browse">Sellers</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index">Category</a></li>
-						<li class="nav-item"><a class="nav-link fw-bold" asp-controller="Product" asp-action="All">All Products</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index">Categories</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Shopping">Products</a></li>
 						<li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">Cart</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admins</a></li>
 					</ul>
+
+					<!-- Admin Dropdown Menu  (Customers, Sellers, Admin, ProductsAll)-->
+					@if (User.IsInRole(Roles.Admin))
+					{
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								⚙️ administrations
+							</a>
+							<ul class="dropdown-menu-admin dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2" aria-labelledby="adminDropdown">
+								<li>
+									<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Customer" asp-action="Index">
+										👤 Customers
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Seller" asp-action="Browse">
+										🛍️ Sellers
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin  dropdown-item rounded-2 py-2 px-3" asp-controller="Admin" asp-action="Index">
+										🛠️ Admins
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin  dropdown-item rounded-2 py-2 px-3" asp-controller="Products" asp-action="Index">
+										All Products
+									</a>
+								</li>
+							</ul>
+						</li>
+					}
+
+
+					<style>
+						@@media (min-width: 992px) {
+							.nav-item.dropdown:hover .dropdown-menu {
+								display: block;
+								opacity: 1;
+								margin-top: 0;
+							}
+						}
+
+						.dropdown-menu-admin .dropdown-item-admin:hover {
+							background-color: #f8f9fa; /* light gray */
+							transform: translateX(5px);
+							transition: all 0.2s ease;
+							left: 50% !important;
+						}
+
+					</style>
 
 					<!-- User Dropdown Menu -->
 					@await Html.PartialAsync("_UserMenu")
