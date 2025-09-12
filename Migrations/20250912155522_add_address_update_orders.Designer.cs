@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UShop.Data;
 
@@ -11,9 +12,11 @@ using UShop.Data;
 namespace UShop.Migrations
 {
     [DbContext(typeof(UShopDBContext))]
-    partial class UShopDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250912155522_add_address_update_orders")]
+    partial class add_address_update_orders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,21 +158,6 @@ namespace UShop.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("OrderSeller", b =>
-                {
-                    b.Property<int>("OrdersId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SellersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrdersId", "SellersId");
-
-                    b.HasIndex("SellersId");
-
-                    b.ToTable("OrderSeller");
-                });
-
             modelBuilder.Entity("UShop.Models.Address", b =>
                 {
                     b.Property<int>("Id")
@@ -198,7 +186,7 @@ namespace UShop.Migrations
                     b.HasIndex("CustomerId")
                         .IsUnique();
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Address");
                 });
 
             modelBuilder.Entity("UShop.Models.Admin", b =>
@@ -473,11 +461,16 @@ namespace UShop.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
 
                     b.ToTable("Sellers");
                 });
@@ -622,21 +615,6 @@ namespace UShop.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OrderSeller", b =>
-                {
-                    b.HasOne("UShop.Models.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrdersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UShop.Models.Seller", null)
-                        .WithMany()
-                        .HasForeignKey("SellersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("UShop.Models.Address", b =>
                 {
                     b.HasOne("UShop.Models.Customer", "Customer")
@@ -729,6 +707,13 @@ namespace UShop.Migrations
                     b.Navigation("Seller");
                 });
 
+            modelBuilder.Entity("UShop.Models.Seller", b =>
+                {
+                    b.HasOne("UShop.Models.Order", null)
+                        .WithMany("Sellers")
+                        .HasForeignKey("OrderId");
+                });
+
             modelBuilder.Entity("UShop.Models.User", b =>
                 {
                     b.HasOne("UShop.Models.Admin", "Admin")
@@ -781,6 +766,8 @@ namespace UShop.Migrations
             modelBuilder.Entity("UShop.Models.Order", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("Sellers");
                 });
 
             modelBuilder.Entity("UShop.Models.Product", b =>

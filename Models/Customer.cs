@@ -18,8 +18,8 @@ namespace UShop.Models
 		[MaxLength(15)]
 		public string? PhoneNumber { get; set; }
 
-		[MaxLength(250)]
-		public string? Address { get; set; }
+		[ValidateNever]
+		public Address? Address { get; set; }
 
 		// Relationships
 		[ValidateNever]

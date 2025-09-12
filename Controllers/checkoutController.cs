@@ -36,7 +36,6 @@ namespace UShop.Controllers
                     {
                         FullName = user.UserName ?? string.Empty,
                         Email = user.Email ?? string.Empty,
-                        Address = string.Empty
                     };
 
                     _context.Customers.Add(customer);
@@ -50,7 +49,6 @@ namespace UShop.Controllers
                 {
                     FullName = "Guest",
                     Email = string.Empty,
-                    Address = string.Empty
                 };
             }
 
@@ -84,7 +82,6 @@ namespace UShop.Controllers
                     {
                         FullName = user.UserName ?? string.Empty,
                         Email = user.Email ?? string.Empty,
-                        Address = string.Empty
                     };
 
                     _context.Customers.Add(customer);
@@ -98,14 +95,14 @@ namespace UShop.Controllers
                 {
                     FullName = order.Customer?.FullName ?? "Guest",
                     Email = order.Customer?.Email ?? string.Empty,
-                    Address = order.Customer?.Address ?? string.Empty
+                    Address = order.Customer?.Address 
                 };
             }
 
             // Validate customer profile
             if (string.IsNullOrEmpty(customer.FullName) ||
                 string.IsNullOrEmpty(customer.Email) ||
-                string.IsNullOrEmpty(customer.Address))
+                customer.Address == null)
             {
                 TempData["IncompleteProfile"] = "Please complete your profile information before checkout.";
                 return RedirectToAction("Edit", "Customer", new { id = customer.Id });

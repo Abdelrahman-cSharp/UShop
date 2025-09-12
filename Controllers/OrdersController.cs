@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +61,6 @@ namespace UShop.Controllers
 		}
 
 		// GET: Orders/Create
-		[Authorize(Roles = "Admin")] // Only admins can create orders manually
 		public IActionResult Create()
 		{
 			// Customers dropdown
@@ -76,7 +74,6 @@ namespace UShop.Controllers
 		// POST: Orders/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Create(Order order, List<int> productIds, List<int> quantities)
 		{
 			if (ModelState.IsValid)
@@ -123,7 +120,6 @@ namespace UShop.Controllers
 		}
 
 		// GET: Orders/Edit/5
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Edit(int id)
 		{
 			var order = await _context.Orders
@@ -140,7 +136,6 @@ namespace UShop.Controllers
 		// POST: Orders/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Edit(int id, Order order)
 		{
 			if (id != order.Id) return NotFound();
@@ -168,7 +163,6 @@ namespace UShop.Controllers
 		// POST: Orders/UpdateStatus - Admin only method
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> UpdateStatus(int id, OrderStatus newStatus)
 		{
 			var order = await _context.Orders.FindAsync(id);
@@ -204,7 +198,6 @@ namespace UShop.Controllers
 		}
 
 		// GET: Orders/Delete/5
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			var order = await _context.Orders
@@ -219,7 +212,6 @@ namespace UShop.Controllers
 		// POST: Orders/Delete/5
 		[HttpPost, ActionName("Delete")]
 		[ValidateAntiForgeryToken]
-		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> DeleteConfirmed(int id)
 		{
 			var order = await _context.Orders

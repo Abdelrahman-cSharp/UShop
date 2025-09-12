@@ -1,141 +1,141 @@
 ﻿@model UShop.Models.Order
 
 @{
-    ViewData["Title"] = "Checkout";
-    var customer = Model.Customer;
+	ViewData["Title"] = "Checkout";
+	var customer = Model.Customer;
 }
 
 <div class="container mt-4">
-    <h2>Checkout</h2>
+	<h2>Checkout</h2>
 
-    <!-- Personal Info Section -->
-    <div class="card mb-3">
-        <div class="card-header">Personal Information</div>
-        <div class="card-body">
-            @if (string.IsNullOrEmpty(customer.FullName) || string.IsNullOrEmpty(customer.Email) || string.IsNullOrEmpty(customer.Address))
-            {
-                <div class="alert alert-warning">
-                    Some of your profile information is missing.
-                    <a href="@Url.Action("Edit", "Customer", new { id = customer.Id })" class="alert-link">Click here to update your profile</a>.
-                </div>
-            }
-            else
-            {
-                <p><strong>Name:</strong> @customer.FullName</p>
-                <p><strong>Email:</strong> @customer.Email</p>
-                <p><strong>Phone:</strong> @customer.PhoneNumber</p>
-                <p><strong>Address:</strong> @customer.Address</p>
-            }
-        </div>
-    </div>
-
-
-    <!-- Payment Section -->
-    <div class="card mb-3">
-        <div class="card-header">Payment Method</div>
-        <div class="card-body">
-            <form asp-action="Place" method="post">
-                <!-- Payment method choice -->
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="PaymentMethod" id="cash" value="CashOnDelivery" checked>
-                    <label class="form-check-label" for="cash">
-                        Cash on Delivery
-                    </label>
-                </div>
-
-                <div class="form-check mt-2">
-                    <input class="form-check-input" type="radio" name="PaymentMethod" id="credit" value="CreditCard">
-                    <label class="form-check-label" for="credit">
-                        Credit Card
-                    </label>
-                </div>
-
-                <!-- Credit card options -->
-                <div id="credit-section" class="mt-3" style="display:none;">
-                    @if (customer.CreditCard != null)
-                    {
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="CreditChoice" id="savedCard" value="Saved" checked>
-                            <label class="form-check-label" for="savedCard">
-                                 Use Saved Card
-                                (**** **** **** @customer.CreditCard.CardNumber.Substring(customer.CreditCard.CardNumber.Length - 4),
-                                Exp: @customer.CreditCard.ExpiryMonth/@customer.CreditCard.ExpiryYear)
-                            </label>
-                        </div>
-                    }
-
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="radio" name="CreditChoice" id="newCard" value="New" @(customer.CreditCard == null ? "checked" : "")>
-                        <label class="form-check-label" for="newCard">
-                             Add New Card
-                        </label>
-                    </div>
-
-                    <!-- New card input form -->
-                    <div id="new-card-form" class="mt-3" style="display:none;">
-                        <div class="form-group">
-                            <label>Card Number</label>
-                            <input type="text" name="CreditCard.CardNumber" class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label>Expiry Month</label>
-                            <input type="number" name="CreditCard.ExpiryMonth" class="form-control" min="1" max="12" />
-                        </div>
-                        <div class="form-group">
-                            <label>Expiry Year</label>
-                            <input type="number" name="CreditCard.ExpiryYear" class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label>CVV</label>
-                            <input type="text" name="CreditCard.CVV" class="form-control" />
-                        </div>
-                    </div>
-                </div>
+	<!-- Personal Info Section -->
+	<div class="card mb-3">
+		<div class="card-header">Personal Information</div>
+		<div class="card-body">
+			@if (string.IsNullOrEmpty(customer.FullName) || string.IsNullOrEmpty(customer.Email) || customer.Address == null)
+			{
+				<div class="alert alert-warning">
+					Some of your profile information is missing.
+					<a href="@Url.Action("Edit", "Customer", new { id = customer.Id })" class="alert-link">Click here to update your profile</a>.
+				</div>
+			}
+			else
+			{
+				<p><strong>Name:</strong> @customer.FullName</p>
+				<p><strong>Email:</strong> @customer.Email</p>
+				<p><strong>Phone:</strong> @customer.PhoneNumber</p>
+				<p><strong>Address:</strong> @customer.Address</p>
+			}
+		</div>
+	</div>
 
 
-                <div class="text-center mt-4">
+	<!-- Payment Section -->
+	<div class="card mb-3">
+		<div class="card-header">Payment Method</div>
+		<div class="card-body">
+			<form asp-action="Place" method="post">
+				<!-- Payment method choice -->
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="PaymentMethod" id="cash" value="CashOnDelivery" checked>
+					<label class="form-check-label" for="cash">
+						Cash on Delivery
+					</label>
+				</div>
 
-                    <button type="submit" class="btn btn-ushop btn-lg">Place Order</button>
+				<div class="form-check mt-2">
+					<input class="form-check-input" type="radio" name="PaymentMethod" id="credit" value="CreditCard">
+					<label class="form-check-label" for="credit">
+						Credit Card
+					</label>
+				</div>
 
-                </div>
-            </form>
-        </div>
-    </div>
+				<!-- Credit card options -->
+				<div id="credit-section" class="mt-3" style="display:none;">
+					@if (customer.CreditCard != null)
+					{
+						<div class="form-check mb-2">
+							<input class="form-check-input" type="radio" name="CreditChoice" id="savedCard" value="Saved" checked>
+							<label class="form-check-label" for="savedCard">
+								Use Saved Card
+								(**** **** **** @customer.CreditCard.CardNumber.Substring(customer.CreditCard.CardNumber.Length - 4),
+								Exp: @customer.CreditCard.ExpiryMonth/@customer.CreditCard.ExpiryYear)
+							</label>
+						</div>
+					}
+
+					<div class="form-check mt-2">
+						<input class="form-check-input" type="radio" name="CreditChoice" id="newCard" value="New" @(customer.CreditCard == null ? "checked" : "")>
+						<label class="form-check-label" for="newCard">
+							Add New Card
+						</label>
+					</div>
+
+					<!-- New card input form -->
+					<div id="new-card-form" class="mt-3" style="display:none;">
+						<div class="form-group">
+							<label>Card Number</label>
+							<input type="text" name="CreditCard.CardNumber" class="form-control" />
+						</div>
+						<div class="form-group">
+							<label>Expiry Month</label>
+							<input type="number" name="CreditCard.ExpiryMonth" class="form-control" min="1" max="12" />
+						</div>
+						<div class="form-group">
+							<label>Expiry Year</label>
+							<input type="number" name="CreditCard.ExpiryYear" class="form-control" />
+						</div>
+						<div class="form-group">
+							<label>CVV</label>
+							<input type="text" name="CreditCard.CVV" class="form-control" />
+						</div>
+					</div>
+				</div>
+
+
+				<div class="text-center mt-4">
+
+					<button type="submit" class="btn btn-ushop btn-lg">Place Order</button>
+
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const creditOption = document.getElementById("credit");
-            const cashOption = document.getElementById("cash");
-            const creditSection = document.getElementById("credit-section");
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const creditOption = document.getElementById("credit");
+			const cashOption = document.getElementById("cash");
+			const creditSection = document.getElementById("credit-section");
 
-            const savedCardOption = document.getElementById("savedCard");
-            const newCardOption = document.getElementById("newCard");
-            const newCardForm = document.getElementById("new-card-form");
+			const savedCardOption = document.getElementById("savedCard");
+			const newCardOption = document.getElementById("newCard");
+			const newCardForm = document.getElementById("new-card-form");
 
-            function togglePaymentMethod() {
-                creditSection.style.display = creditOption.checked ? "block" : "none";
-            }
+			function togglePaymentMethod() {
+				creditSection.style.display = creditOption.checked ? "block" : "none";
+			}
 
-            function toggleCardForm() {
-                if (newCardOption && newCardOption.checked) {
-                    newCardForm.style.display = "block";
-                } else {
-                    newCardForm.style.display = "none";
-                }
-            }
+			function toggleCardForm() {
+				if (newCardOption && newCardOption.checked) {
+					newCardForm.style.display = "block";
+				} else {
+					newCardForm.style.display = "none";
+				}
+			}
 
-            // Listeners
-            creditOption.addEventListener("change", togglePaymentMethod);
-            cashOption.addEventListener("change", togglePaymentMethod);
+			// Listeners
+			creditOption.addEventListener("change", togglePaymentMethod);
+			cashOption.addEventListener("change", togglePaymentMethod);
 
-            if (savedCardOption) savedCardOption.addEventListener("change", toggleCardForm);
-            if (newCardOption) newCardOption.addEventListener("change", toggleCardForm);
+			if (savedCardOption) savedCardOption.addEventListener("change", toggleCardForm);
+			if (newCardOption) newCardOption.addEventListener("change", toggleCardForm);
 
-            // Initial state
-            togglePaymentMethod();
-            toggleCardForm();
-        });
-    </script>
+			// Initial state
+			togglePaymentMethod();
+			toggleCardForm();
+		});
+	</script>
 }
