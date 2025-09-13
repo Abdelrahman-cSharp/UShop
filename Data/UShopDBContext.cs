@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UShop.Models;
+using UShop.ViewModels;
 namespace UShop.Data;
 
 
@@ -24,7 +25,8 @@ public class UShopDBContext : IdentityDbContext<User>
 	public DbSet<Item> Items { get; set; }
 
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
 
@@ -38,8 +40,21 @@ public class UShopDBContext : IdentityDbContext<User>
 			.HasOne(i => i.Order)
 			.WithMany(o => o.Items)
 			.HasForeignKey(i => i.OrderId)
-			.OnDelete(DeleteBehavior.Restrict); // prevent multiple cascade path
-	}
+			.OnDelete(DeleteBehavior.Restrict);
+        // prevent multiple cascade path
+        modelBuilder.Entity<CreditCard>()
+    .HasOne(cc => cc.Customer)
+    .WithMany(c => c.CreditCards) // لازم Customer يكون عنده ICollection<CreditCard>
+    .HasForeignKey(cc => cc.CustomerId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CreditCard>()
+            .HasOne(cc => cc.Seller)
+            .WithMany(s => s.CreditCards) // لازم Seller يكون عنده ICollection<CreditCard>
+            .HasForeignKey(cc => cc.SellerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+    }
 
 
 }
