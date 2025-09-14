@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UShop.Data;
 
@@ -11,9 +12,11 @@ using UShop.Data;
 namespace UShop.Migrations
 {
     [DbContext(typeof(UShopDBContext))]
-    partial class UShopDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250913133515_AddExpiryDateToCreditCard")]
+    partial class AddExpiryDateToCreditCard
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,6 +173,37 @@ namespace UShop.Migrations
                     b.ToTable("OrderSeller");
                 });
 
+            modelBuilder.Entity("UShop.Models.Address", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
+
+                    b.ToTable("Addresses");
+                });
+
             modelBuilder.Entity("UShop.Models.Admin", b =>
                 {
                     b.Property<int>("Id")
@@ -266,8 +300,9 @@ namespace UShop.Migrations
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CustomerId1")
-                        .HasColumnType("int");
+                    b.Property<string>("ExpiryDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ExpiryMonth")
                         .HasColumnType("int");
@@ -278,22 +313,15 @@ namespace UShop.Migrations
                     b.Property<int?>("SellerId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SellerId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("CustomerId1")
+                    b.HasIndex("CustomerId")
                         .IsUnique()
-                        .HasFilter("[CustomerId1] IS NOT NULL");
+                        .HasFilter("[CustomerId] IS NOT NULL");
 
-                    b.HasIndex("SellerId");
-
-                    b.HasIndex("SellerId1")
+                    b.HasIndex("SellerId")
                         .IsUnique()
-                        .HasFilter("[SellerId1] IS NOT NULL");
+                        .HasFilter("[SellerId] IS NOT NULL");
 
                     b.ToTable("CreditCards");
                 });
@@ -550,7 +578,7 @@ namespace UShop.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("UShop.ViewModels.Address", b =>
+            modelBuilder.Entity("UShop.ViewModels.AddressViewModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -560,25 +588,25 @@ namespace UShop.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Street")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId")
-                        .IsUnique();
-
-                    b.ToTable("Addresses");
+                    b.ToTable("AddressViewModel");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -647,6 +675,17 @@ namespace UShop.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UShop.Models.Address", b =>
+                {
+                    b.HasOne("UShop.Models.Customer", "Customer")
+                        .WithOne("Address")
+                        .HasForeignKey("UShop.Models.Address", "CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("UShop.Models.Cart", b =>
                 {
                     b.HasOne("UShop.Models.Customer", "Customer")
@@ -661,22 +700,12 @@ namespace UShop.Migrations
             modelBuilder.Entity("UShop.Models.CreditCard", b =>
                 {
                     b.HasOne("UShop.Models.Customer", "Customer")
-                        .WithMany("CreditCards")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UShop.Models.Customer", null)
                         .WithOne("CreditCard")
-                        .HasForeignKey("UShop.Models.CreditCard", "CustomerId1");
+                        .HasForeignKey("UShop.Models.CreditCard", "CustomerId");
 
                     b.HasOne("UShop.Models.Seller", "Seller")
-                        .WithMany("CreditCards")
-                        .HasForeignKey("SellerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UShop.Models.Seller", null)
                         .WithOne("CreditCard")
-                        .HasForeignKey("UShop.Models.CreditCard", "SellerId1");
+                        .HasForeignKey("UShop.Models.CreditCard", "SellerId");
 
                     b.Navigation("Customer");
 
@@ -759,15 +788,6 @@ namespace UShop.Migrations
                     b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("UShop.ViewModels.Address", b =>
-                {
-                    b.HasOne("UShop.Models.Customer", null)
-                        .WithOne("Address")
-                        .HasForeignKey("UShop.ViewModels.Address", "CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("UShop.Models.Admin", b =>
                 {
                     b.Navigation("User");
@@ -791,8 +811,6 @@ namespace UShop.Migrations
 
                     b.Navigation("CreditCard");
 
-                    b.Navigation("CreditCards");
-
                     b.Navigation("Orders");
 
                     b.Navigation("User");
@@ -811,8 +829,6 @@ namespace UShop.Migrations
             modelBuilder.Entity("UShop.Models.Seller", b =>
                 {
                     b.Navigation("CreditCard");
-
-                    b.Navigation("CreditCards");
 
                     b.Navigation("Products");
 

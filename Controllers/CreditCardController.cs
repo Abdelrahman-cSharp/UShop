@@ -45,7 +45,7 @@ namespace UShop.Controllers
 			if (ownerType == "Customer")
 			{
 				var customer = await _context.Customers
-					.Include(c => c.CreditCard) // include credit card
+					.Include(c => c.CreditCards) // include credit card
 					.FirstOrDefaultAsync(c => c.Id == ownerId);
 
 				if (customer == null)
@@ -56,7 +56,7 @@ namespace UShop.Controllers
 			else if (ownerType == "Seller")
 			{
 				var seller = await _context.Sellers
-					.Include(s => s.CreditCard) // include credit card
+					.Include(s => s.CreditCards) // include credit card
 					.FirstOrDefaultAsync(s => s.Id == ownerId);
 
 				if (seller == null)
