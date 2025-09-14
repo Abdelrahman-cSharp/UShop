@@ -132,7 +132,6 @@
 			}
 		}
 
-
 		}
 
 		.dropdown-menu-admin .dropdown-item-admin:hover {
@@ -173,7 +172,7 @@
 						<li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">🛒Cart</a></li>
 
 						<!-- Admin Dropdown Menu -->
-						@if (User.IsInRole("Admin"))
+						@if (User.IsInRole(Roles.Admin))
 						{
 							<li class="nav-item dropdown">
 								<a class="nav-link dropdown-toggle fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -204,8 +203,9 @@
 							</li>
 						}
 
+
 						<!-- User Profile Dropdown -->
-						@if (User.Identity.IsAuthenticated)
+						@if (User?.Identity?.IsAuthenticated == true)
 						{
 							<li class="nav-item dropdown profile-dropdown">
 								<a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -218,38 +218,22 @@
 											<i class="fas fa-user me-2 text-primary"></i>My Profile
 										</a>
 									</li>
+									<li><hr class="dropdown-divider"></li>
 									<li>
-										<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Account" asp-action="EditProfile">
-											<i class="fas fa-edit me-2 text-success"></i>Edit Profile
+										<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Orders" asp-action="Index">
+											<i class="fas fa-shopping-bag me-2 text-info"></i>My Orders
 										</a>
 									</li>
-									<li><hr class="dropdown-divider"></li>
-									@if (User.IsInRole("Customer"))
+
+									@if (User.IsInRole(Roles.Seller))
 									{
 										<li>
-											<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Orders" asp-action="Index">
-												<i class="fas fa-shopping-bag me-2 text-info"></i>My Orders
-											</a>
-										</li>
-										<li>
-											<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="CreditCard" asp-action="Index">
-												<i class="fas fa-credit-card me-2 text-warning"></i>Payment Methods
-											</a>
-										</li>
-									}
-									@if (User.IsInRole("Seller"))
-									{
-										<li>
-											<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Products" asp-action="MyProducts">
+											<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Products" asp-action="Index">
 												<i class="fas fa-box me-2 text-info"></i>My Products
 											</a>
 										</li>
-										<li>
-											<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Orders" asp-action="SellerOrders">
-												<i class="fas fa-truck me-2 text-warning"></i>Orders Management
-											</a>
-										</li>
 									}
+
 									<li><hr class="dropdown-divider"></li>
 									<li>
 										<form method="post" asp-controller="Account" asp-action="Logout" class="d-inline w-100">
