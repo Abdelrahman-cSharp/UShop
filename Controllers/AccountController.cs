@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UShop.Data;
 using UShop.Models;
-using UShop.ViewModels;
 
 
 namespace UshopFront.Controllers

@@ -1,6 +1,4 @@
-﻿using UShop.Models;
-
-namespace UShop.ViewModels
+﻿namespace UShop.Models
 {
     public class UserProfileViewModel
     {

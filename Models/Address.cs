@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using UShop.Models;
 
-namespace UShop.ViewModels
+
+namespace UShop.Models
 {
-    public class Address // كان AddressViewMode
+    public class Address 
     {
         public int Id { get; set; }
         [Required]
@@ -15,7 +15,7 @@ namespace UShop.ViewModels
         public int CustomerId { get; set; }
     }
 
-    public class EditProfileViewModel // كان EditProfileViewMode
+    public class EditProfileViewModel
     {
         public string UserId { get; set; } = string.Empty; // مفقود
         public UserType UserType { get; set; }
