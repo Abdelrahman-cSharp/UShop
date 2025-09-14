@@ -26,8 +26,6 @@ namespace UShop.Models
 
 		public ICollection<Product> Products { get; set; } = new List<Product>();
 		public ICollection<Order> Orders { get; set; } = new List<Order>();
-
-        // تغيير من CreditCard واحد إلى مجموعة
         public ICollection<CreditCard> CreditCards { get; set; } = new List<CreditCard>();
 
 

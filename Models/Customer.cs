@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
-using UShop.ViewModels;
 
 namespace UShop.Models
 {
@@ -34,7 +33,6 @@ namespace UShop.Models
 
 		public ICollection<Order> Orders { get; set; } = new List<Order>();
 
-        // تغيير من CreditCard واحد إلى مجموعة
         public ICollection<CreditCard> CreditCards { get; set; } = new List<CreditCard>();
     
 }
