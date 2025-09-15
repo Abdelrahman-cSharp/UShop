@@ -23,8 +23,7 @@ namespace UShop.Models
 		[ValidateNever]
 		public User? User { get; set; }
 
-		[ValidateNever]
-		public CreditCard? CreditCard { get; set; }
+
 
 		public ICollection<Product> Products { get; set; } = new List<Product>();
 		public ICollection<Order> Orders { get; set; } = new List<Order>();

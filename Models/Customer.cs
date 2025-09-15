@@ -30,9 +30,6 @@ namespace UShop.Models
         [ValidateNever]
         public Cart? Cart { get; set; }
 
-        [ValidateNever]
-        public CreditCard? CreditCard { get; set; }
-
         public ICollection<Order> Orders { get; set; } = new List<Order>();
 
         public ICollection<CreditCard> CreditCards { get; set; } = new List<CreditCard>();
