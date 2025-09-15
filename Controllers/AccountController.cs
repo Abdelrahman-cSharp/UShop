@@ -14,14 +14,17 @@ namespace UshopFront.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly UShopDBContext _context;
+        private readonly IWebHostEnvironment _environment;
 
         public AccountController(UserManager<User> userManager,
                                  SignInManager<User> signInManager,
-                                 UShopDBContext context)
+                                 UShopDBContext context,
+                                 IWebHostEnvironment environment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _environment = environment;
         }
 
         // ------------------------------
@@ -277,6 +280,55 @@ namespace UshopFront.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(UserProfileViewModel model)
+        {
+            if (!ModelState.IsValid) return RedirectToAction("Profile");
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
+
+            // Update based on user type
+            switch (currentUser.UserType)
+            {
+                case UserType.Customer:
+                    var customer = await _context.Customers
+                        .FirstOrDefaultAsync(c => c.Id == model.Id);
+                    if (customer != null)
+                    {
+                        customer.FullName = model.FullName;
+                        customer.PhoneNumber = model.PhoneNumber;
+                    }
+                    break;
+
+                case UserType.Seller:
+                    var seller = await _context.Sellers
+                        .FirstOrDefaultAsync(s => s.Id == model.Id);
+                    if (seller != null)
+                    {
+                        seller.FullName = model.FullName;
+                        seller.PhoneNumber = model.PhoneNumber;
+                    }
+                    break;
+
+                case UserType.Admin:
+                    var admin = await _context.Admins
+                        .FirstOrDefaultAsync(a => a.Id == model.Id);
+                    if (admin != null)
+                    {
+                        admin.FullName = model.FullName;
+                        admin.Description = model.Description;
+                    }
+                    break;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
         // ------------------------------
         // HELPERS
         // ------------------------------
@@ -291,7 +343,6 @@ namespace UshopFront.Controllers
                 UserType = targetUser.UserType,
                 Email = targetUser.Email ?? string.Empty,
                 IsOwnProfile = currentUser.Id == userId,
-                CanEdit = currentUser.Id == userId || User.IsInRole("Admin")
             };
 
             switch (targetUser.UserType)
@@ -317,6 +368,7 @@ namespace UshopFront.Controllers
                         viewModel.Id = customer.Id;
                         viewModel.FullName = customer.FullName;
                         viewModel.PhoneNumber = customer.PhoneNumber;
+                        viewModel.ImageUrl = customer.ImageUrl;
                         viewModel.Address = customer.Address;
 
                         viewModel.CreditCards = await _context.CreditCards
@@ -353,5 +405,68 @@ namespace UshopFront.Controllers
 
             return viewModel;
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile profileImage)
+        {
+            if (profileImage == null || profileImage.Length == 0)
+                return RedirectToAction("Profile");
+
+            // Save file to /wwwroot/images/avatars
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "images", "avatars");
+            Directory.CreateDirectory(uploadsPath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(profileImage.FileName)}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            await using (var stream = System.IO.File.Create(filePath))
+            {
+                await profileImage.CopyToAsync(stream);
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
+
+            // Decide where to store the URL
+            switch (currentUser.UserType)
+            {
+                case UserType.Customer:
+                    if (currentUser.CustomerId.HasValue)
+                    {
+                        var customer = await _context.Customers
+                            .FirstOrDefaultAsync(c => c.Id == currentUser.CustomerId);
+                        if (customer != null)
+                        {
+                            customer.ImageUrl = $"/images/avatars/{fileName}";
+                            _context.Update(customer);
+                        }
+                    }
+                    break;
+
+                case UserType.Seller:
+                    if (currentUser.SellerId.HasValue)
+                    {
+                        var seller = await _context.Sellers
+                            .FirstOrDefaultAsync(s => s.Id == currentUser.SellerId);
+                        if (seller != null)
+                        {
+                            seller.ImageUrl = $"/images/avatars/{fileName}";
+                            _context.Update(seller);
+                        }
+                    }
+                    break;
+
+                default:
+                    // Admins could have their own table/logic if needed
+                    TempData["Error"] = "Only customers or sellers can upload a profile image.";
+                    return RedirectToAction("Profile");
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Profile image updated!";
+            return RedirectToAction("Profile");
+        }
+
     }
 }

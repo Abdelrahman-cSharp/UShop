@@ -1,4 +1,5 @@
-﻿namespace UShop.Models
+﻿
+namespace UShop.Models
 {
     public class UserProfileViewModel
     {
@@ -8,21 +9,22 @@
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
-        public string? Description { get; set; } // For Admin
-        public string? ImageUrl { get; set; } // For Seller
-        public bool IsOwnProfile { get; set; }
-        public bool CanEdit { get; set; }
+        public string? Description { get; set; }
 
-        // Address (Customer only)
+        // Stores the relative URL of the saved profile image in /wwwroot/images/avatars
+        public string? ImageUrl { get; set; }
+
+        // Used only for uploading a new image via a form
+        public IFormFile? ImageFile { get; set; }
+
+        public bool IsOwnProfile { get; set; }
+
         public Address? Address { get; set; }
 
-        // Credit Cards (Customer & Seller)
         public List<CreditCard>? CreditCards { get; set; }
 
-        // Orders (Customer only)
         public List<Order>? Orders { get; set; }
 
-        // Products (Seller only)
         public List<Product>? Products { get; set; }
 
         // Statistics
@@ -41,8 +43,10 @@
             _ => "bg-secondary"
         };
 
-        public string ProfileImageUrl => UserType == UserType.Seller && !string.IsNullOrEmpty(ImageUrl)
-            ? ImageUrl
-            : "/images/avatars/default.png";
+        // ✅ Always show the uploaded image if one exists, otherwise default
+        public string ProfileImageUrl =>
+            !string.IsNullOrEmpty(ImageUrl)
+                ? ImageUrl
+                : "/images/avatars/default.svg";
     }
 }
