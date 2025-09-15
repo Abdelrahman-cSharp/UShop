@@ -17,6 +17,7 @@ namespace UShop.Models
         public string? Description { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Price must be 0 or greater")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Stock must be 0 or greater")]
