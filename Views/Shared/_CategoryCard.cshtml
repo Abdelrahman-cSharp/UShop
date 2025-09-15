@@ -20,7 +20,7 @@
 				   asp-controller="Products" asp-action="Shopping" asp-route-categoryId="@category.Id">
 
 					<!-- Overlay buttons (Admin only) -->
-					@if (User.IsInRole(Roles.Admin))
+					@if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Seller))
 					{
 						<div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
 							<a asp-action="Details" asp-route-id="@category.Id" class="btn btn-sm btn-outline-info" title="Details">
@@ -48,13 +48,13 @@
 						</div>
 					}
 
-					<!-- Card Body -->
-					<div class="card-body text-dark">
-						<h5 class="card-title fw-bold">@category.Name</h5>
-						<p class="card-text">
-							@(!string.IsNullOrEmpty(category.Description)
-														? category.Description
-														: "No description available")
+				<!-- Card Body -->
+				<div class="card-body text-dark">
+					<h5 class="card-title fw-bold">@category.Name</h5>
+					<p class="card-text">
+						@(!string.IsNullOrEmpty(category.Description)
+											? category.Description
+											: "No description available")
 						</p>
 					</div>
 				</a>
