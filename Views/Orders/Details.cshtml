@@ -2,15 +2,22 @@
 @{
 	ViewData["Title"] = "Order Details";
 
+	// ✅ seller-specific status if present
+	UShop.Models.OrderStatus? sellerStatus =
+		ViewData["SellerStatus"] as UShop.Models.OrderStatus?;
+
+	// ✅ Use seller status if available, otherwise the global order status
+	var effectiveStatus = sellerStatus ?? Model.Status;
+
 	// Timeline steps similar to the screenshot
 	var steps = new[] { "Ordered", "Shipped", "Out for delivery", "Delivered" };
 
-	// Map your statuses to the timeline index
+	// Map statuses to the timeline index
 	int activeIndex = 0;
-	switch (Model.Status)
+	switch (effectiveStatus)
 	{
 		case UShop.Models.OrderStatus.Pending:
-		case UShop.Models.OrderStatus.Processing:
+		case UShop.Models.OrderStatus.Ordered:
 			activeIndex = 0; // Ordered
 			break;
 		case UShop.Models.OrderStatus.Shipped:
@@ -28,7 +35,7 @@
 	}
 
 	// Friendly headline
-	string headline = Model.Status switch
+	string headline = effectiveStatus switch
 	{
 		UShop.Models.OrderStatus.Delivered => "Delivered",
 		UShop.Models.OrderStatus.Shipped => "On the way",
@@ -38,7 +45,8 @@
 
 	var firstItem = Model.Items?.FirstOrDefault();
 	var firstImage = firstItem?.Product?.ImageUrl;
-	bool canCancel = Model.Status == UShop.Models.OrderStatus.Pending || Model.Status == UShop.Models.OrderStatus.Processing;
+	bool canCancel = effectiveStatus == UShop.Models.OrderStatus.Pending
+				  || effectiveStatus == UShop.Models.OrderStatus.Ordered;
 }
 
 <!-- UI -->
@@ -58,7 +66,7 @@
 	</div>
 
 	<!-- Timeline -->
-	@if (Model.Status != UShop.Models.OrderStatus.Cancelled)
+	@if (effectiveStatus != UShop.Models.OrderStatus.Cancelled)
 	{
 		<nav class="ush-order-tracker" aria-label="Order progress">
 			<ol class="ush-order-steps p-0 m-0 d-flex align-items-center" role="list">
@@ -87,7 +95,6 @@
 		</div>
 	}
 
-
 	<!-- Info Cards Row -->
 	<div class="row g-4 mt-3">
 		<!-- Delivery info -->
@@ -96,12 +103,18 @@
 				<div class="card-body">
 					<div class="d-flex justify-content-between align-items-center mb-2">
 						<h5 class="m-0 ush-order-card-title">Delivery info</h5>
-						<span class="badge rounded-pill ush-order-badge">@Model.Status</span>
+						<span class="badge rounded-pill ush-order-badge">@effectiveStatus</span>
 					</div>
 					<p class="mb-2 text-muted">Date: @Model.OrderDate.ToString("dd/MM/yyyy")</p>
 					@if (User.IsInRole(Roles.Seller))
 					{
-						<a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-3">Update delivery instructions</a>
+						<a href="javascript:void(0)"
+						   class="btn btn-outline-primary btn-sm rounded-pill px-3"
+						   data-bs-toggle="modal"
+						   data-bs-target="#updateStatusModal"
+						   data-order-id="@Model.Id">
+							Update delivery instructions
+						</a>
 					}
 				</div>
 			</div>
@@ -140,13 +153,13 @@
 						<a asp-action="CancelConfirmation" asp-route-id="@Model.Id"
 						   class="btn btn-danger rounded-pill px-3 align-self-start">🚫 Cancel Order</a>
 					}
-					else if (Model.Status == UShop.Models.OrderStatus.Shipped)
+					else if (effectiveStatus == UShop.Models.OrderStatus.Shipped)
 					{
 						<div class="alert alert-info py-2 px-3 rounded-3 mb-0">
 							🚚 This order has been shipped and can’t be cancelled.
 						</div>
 					}
-					else if (Model.Status == UShop.Models.OrderStatus.Delivered)
+					else if (effectiveStatus == UShop.Models.OrderStatus.Delivered)
 					{
 						<div class="alert alert-success py-2 px-3 rounded-3 mb-0">
 							✅ Delivered successfully!
@@ -157,26 +170,6 @@
 		</div>
 	</div>
 
-	@* <!-- Items grid -->
-	<h5 class="mt-5 mb-3 ush-order-section-title">Items in this order</h5>
-	<div class="row g-4">
-		@foreach (var item in Model.Items)
-		{
-			<div class="col-6 col-sm-6 col-md-4 col-lg-3">
-				<div class="card h-100 border-0 shadow-sm rounded-4 ush-order-product-card">
-					<div class="ratio ratio-1x1 bg-light rounded-top-4 ush-order-product-media">
-						<img src="@item.Product?.ImageUrl" alt="@item.Product?.Name" class="img-fluid p-3" style="object-fit: contain;">
-					</div>
-					<div class="card-body text-center">
-						<div class="fw-semibold text-dark text-truncate" title="@item.Product?.Name">@item.Product?.Name</div>
-						<div class="text-muted small">Qty: @item.Quantity</div>
-						<div class="text-muted small">Unit: @item.UnitPrice.ToString("C")</div>
-						<div class="fw-bold text-primary mt-1">Total: @item.TotalPrice.ToString("C")</div>
-					</div>
-				</div>
-			</div>
-		}
-	</div> *@
 	<!-- Order Items Section -->
 	<div class="items-section-ushop">
 		<h3 class="items-title-ushop">Order Items</h3>
@@ -225,6 +218,41 @@
 		<a asp-action="Index" class="btn btn-secondary btn-lg rounded-pill px-5 shadow-sm">
 			← Back to Orders
 		</a>
+	</div>
+</div>
+
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="updateStatusForm" asp-action="UpdateStatus" asp-controller="Orders" method="post">
+				@Html.AntiForgeryToken()
+				<div class="modal-header">
+					<h5 class="modal-title">Update Order Status</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body">
+					<input type="hidden" name="id" id="orderIdInput" value="@Model.Id" />
+
+					<div class="mb-3">
+						<label for="newStatus" class="form-label">Select new status</label>
+						<select class="form-select" name="newStatus" id="newStatus" required>
+							@foreach (var s in Enum.GetValues(typeof(UShop.Models.OrderStatus)))
+							{
+								<option value="@s">@s</option>
+							}
+						</select>
+					</div>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">Update</button>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>
 

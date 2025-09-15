@@ -26,6 +26,7 @@ namespace UShop.Controllers
             if (user == null) return RedirectToAction("Login", "Account");
 
             var orders = await GetOrdersOfUser(user).ToListAsync();
+            orders.Reverse(); // show latest orders first
             return View(orders);
         }
 
@@ -33,6 +34,7 @@ namespace UShop.Controllers
         {
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
+                .Include(o => o.Sellers)
                 .Include(o => o.Items).ThenInclude(i => i.Product);
 
             if (User.IsInRole(Roles.Admin))
@@ -45,7 +47,7 @@ namespace UShop.Controllers
             }
             if (User.IsInRole(Roles.Seller) && user.SellerId.HasValue)
             {
-                return query.Where(o => o.Items.Any(i => i.Product.SellerId == user.SellerId));
+                return query.Where(o => o.Sellers.Any(i => i.Id == user.SellerId));
             }
 
             return query.Where(o => false);
@@ -59,6 +61,7 @@ namespace UShop.Controllers
 
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
+                .Include(o => o.Sellers)
                 .Include(o => o.Items)
                     .ThenInclude(oi => oi.Product);
 
@@ -72,17 +75,25 @@ namespace UShop.Controllers
             }
             else
             {
-                return Forbid(); 
+                return Forbid();
             }
 
             var order = await query.FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
 
-            if(User.IsInRole(Roles.Seller) && user.SellerId.HasValue)
+            if (User.IsInRole(Roles.Seller) && user.SellerId.HasValue)
             {
                 order.Items = order.Items
                     .Where(i => i.Product!.SellerId == user.SellerId)
                     .ToList();
+
+                // ✅ expose the current seller’s own status via ViewData
+                var sellerIndex = order.Sellers.ToList()
+                                   .FindIndex(s => s.Id == user.SellerId.Value);
+                if (sellerIndex >= 0 && sellerIndex < order.Statuses.Count)
+                {
+                    ViewData["SellerStatus"] = order.Statuses[sellerIndex];
+                }
             }
 
             return View(order);
@@ -98,61 +109,64 @@ namespace UShop.Controllers
 
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Order order, List<int> productIds, List<int> quantities)
+        public async Task<IActionResult> Create(Order order)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
-
-                var sellerSet = new HashSet<Seller>();
-
-                if (productIds != null && quantities != null && productIds.Count == quantities.Count)
-                {
-                    for (int i = 0; i < productIds.Count; i++)
-                    {
-                        if (quantities[i] <= 0)
-                        {
-                            ModelState.AddModelError("", "Quantity must be greater than 0");
-                            continue;
-                        }
-
-                        var product = await _context.Products
-                            .Include(p => p.Seller)
-                            .FirstOrDefaultAsync(p => p.Id == productIds[i]);
-
-                        if (product != null)
-                        {
-                            var orderItem = new Item
-                            {
-                                OrderId = order.Id,
-                                ProductId = product.Id,
-                                Quantity = quantities[i],
-                                UnitPrice = product.Price
-                            };
-                            _context.Items.Add(orderItem);
-
-                            if (product.Seller != null)
-                                sellerSet.Add(product.Seller);
-                        }
-                    }
-                }
-
-                // Assign all unique sellers for the order
-                order.Sellers = sellerSet.ToList();
-
-                order.Statuses = sellerSet.Select(s => OrderStatus.Pending).ToList();
-
-
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
+                return View(order);
             }
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name");
-            return View(order);
+            // Fetch the customer’s cart with its items & product/seller info
+            var cart = await _context.Carts
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId);
+
+            if (cart == null || !cart.Items.Any())
+            {
+                ModelState.AddModelError("", "Cart is empty.");
+                ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
+                return View(order);
+            }
+
+            // Build order items from the cart
+            var sellerIds = new HashSet<int>();
+            var orderItems = new List<Item>();
+
+            foreach (var cartItem in cart.Items)
+            {
+                if (cartItem.Quantity <= 0 || cartItem.Product == null) continue;
+
+                orderItems.Add(new Item
+                {
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    UnitPrice = cartItem.UnitPrice
+                });
+
+                sellerIds.Add(cartItem.Product.SellerId);
+            }
+
+            order.Items = orderItems;
+
+            // Attach all sellers related to those products
+            order.Sellers = await _context.Sellers
+                                          .Where(s => sellerIds.Contains(s.Id))
+                                          .ToListAsync();
+
+            order.Status = OrderStatus.Pending;
+            order.Statuses = sellerIds.Select(_ => OrderStatus.Pending).ToList();
+
+            _context.Orders.Add(order);
+
+            _context.Items.RemoveRange(cart.Items);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Orders/Edit/5
@@ -202,8 +216,8 @@ namespace UShop.Controllers
             // Define valid status transitions
             return currentStatus switch
             {
-                OrderStatus.Pending => newStatus == OrderStatus.Processing || newStatus == OrderStatus.Cancelled,
-                OrderStatus.Processing => newStatus == OrderStatus.Shipped || newStatus == OrderStatus.Cancelled,
+                OrderStatus.Pending => newStatus == OrderStatus.Ordered || newStatus == OrderStatus.Cancelled,
+                OrderStatus.Ordered => newStatus == OrderStatus.Shipped || newStatus == OrderStatus.Cancelled,
                 OrderStatus.Shipped => newStatus == OrderStatus.Delivered,
                 OrderStatus.Delivered => false, // No transitions from delivered
                 OrderStatus.Cancelled => false, // No transitions from cancelled
@@ -284,7 +298,7 @@ namespace UShop.Controllers
         private bool CanOrderBeCancelled(OrderStatus status)
         {
             // Only allow cancellation for Pending and Processing orders
-            return status == OrderStatus.Pending || status == OrderStatus.Processing;
+            return status == OrderStatus.Pending || status == OrderStatus.Ordered;
         }
 
         // Optional: GET method to show cancellation confirmation page
@@ -309,12 +323,6 @@ namespace UShop.Controllers
             }
 
             return View(order);
-        }
-
-        private async Task<int?> GetCustomerIdAsync()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            return user?.CustomerId;
         }
 
         // POST: Orders/UpdateStatus

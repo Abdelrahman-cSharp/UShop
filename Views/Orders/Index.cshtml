@@ -45,7 +45,7 @@
 					var statusClass = order.Status switch
 					{
 						UShop.Models.OrderStatus.Pending => "is-pending",
-						UShop.Models.OrderStatus.Processing => "is-processing",
+						UShop.Models.OrderStatus.Ordered => "is-ordered",
 						UShop.Models.OrderStatus.Shipped => "is-shipped",
 						UShop.Models.OrderStatus.Delivered => "is-delivered",
 						UShop.Models.OrderStatus.Cancelled => "is-cancelled",
@@ -56,7 +56,7 @@
 					int stepIndex = order.Status switch
 					{
 						UShop.Models.OrderStatus.Pending => 0,
-						UShop.Models.OrderStatus.Processing => 0,
+						UShop.Models.OrderStatus.Ordered => 0,
 						UShop.Models.OrderStatus.Shipped => 1,
 						UShop.Models.OrderStatus.Delivered => 3,
 						_ => -1
