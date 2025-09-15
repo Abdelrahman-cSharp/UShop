@@ -51,41 +51,39 @@ namespace UShop.Controllers
             return query.Where(o => false);
         }
 
-
-
-
-        //// GET: Orders
-        //public async Task<IActionResult> Index()
-        //{
-        //    var customerId = await GetCustomerIdAsync();
-        //    if (customerId == null)
-        //        return Unauthorized();
-
-        //    var orders = await _context.Orders
-        //         .Where(o => o.CustomerId == customerId) // only logged-in user's orders
-        //         .Include(o => o.Customer)
-        //         .Include(o => o.Items)
-        //             .ThenInclude(oi => oi.Product)
-        //         .ToListAsync();
-
-        //    return View(orders);
-        //}
-
         // GET: Orders/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var customerId = await GetCustomerIdAsync();
-            if (customerId == null)
-                return Unauthorized(); // TODO: replace with logged-in user ID
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Account");
 
-            var order = await _context.Orders
-                 .Where(o => o.CustomerId == customerId) // secure: user can only access own order
-                 .Include(o => o.Customer)
-                 .Include(o => o.Items)
-                      .ThenInclude(oi => oi.Product)
-                 .FirstOrDefaultAsync(o => o.Id == id);
+            IQueryable<Order> query = _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product);
 
+            if (User.IsInRole(Roles.Customer) && user.CustomerId.HasValue)
+            {
+                query = query.Where(o => o.CustomerId == user.CustomerId);
+            }
+            else if (User.IsInRole(Roles.Seller) && user.SellerId.HasValue)
+            {
+                query = query.Where(o => o.Items.Any(i => i.Product!.SellerId == user.SellerId));
+            }
+            else
+            {
+                return Forbid(); 
+            }
+
+            var order = await query.FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
+
+            if(User.IsInRole(Roles.Seller) && user.SellerId.HasValue)
+            {
+                order.Items = order.Items
+                    .Where(i => i.Product!.SellerId == user.SellerId)
+                    .ToList();
+            }
 
             return View(order);
         }
@@ -100,30 +98,31 @@ namespace UShop.Controllers
 
             return View();
         }
-
-        // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Order order, List<int> productIds, List<int> quantities)
         {
             if (ModelState.IsValid)
             {
-                // Add order
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();
 
-                // Add order items
+                var sellerSet = new HashSet<Seller>();
+
                 if (productIds != null && quantities != null && productIds.Count == quantities.Count)
                 {
                     for (int i = 0; i < productIds.Count; i++)
                     {
-                        if (quantities[i] <= 0) // Add validation
+                        if (quantities[i] <= 0)
                         {
-                            ModelState.AddModelError("", $"Quantity must be greater than 0");
+                            ModelState.AddModelError("", "Quantity must be greater than 0");
                             continue;
                         }
 
-                        var product = await _context.Products.FindAsync(productIds[i]);
+                        var product = await _context.Products
+                            .Include(p => p.Seller)
+                            .FirstOrDefaultAsync(p => p.Id == productIds[i]);
+
                         if (product != null)
                         {
                             var orderItem = new Item
@@ -134,18 +133,25 @@ namespace UShop.Controllers
                                 UnitPrice = product.Price
                             };
                             _context.Items.Add(orderItem);
+
+                            if (product.Seller != null)
+                                sellerSet.Add(product.Seller);
                         }
                     }
-                    await _context.SaveChangesAsync();
                 }
 
+                // Assign all unique sellers for the order
+                order.Sellers = sellerSet.ToList();
+
+                order.Statuses = sellerSet.Select(s => OrderStatus.Pending).ToList();
+
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            // If invalid, reload dropdowns
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
             ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name");
-
             return View(order);
         }
 
@@ -188,28 +194,6 @@ namespace UShop.Controllers
 
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
             return View(order);
-        }
-
-        // POST: Orders/UpdateStatus - Admin only method
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int id, OrderStatus newStatus)
-        {
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound();
-
-            // Validate status transitions (optional business logic)
-            if (!IsValidStatusTransition(order.Status, newStatus))
-            {
-                TempData["Error"] = "Invalid status transition";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
-            order.Status = newStatus;
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Order status updated to {newStatus}";
-            return RedirectToAction(nameof(Details), new { id });
         }
 
         // Helper method for status validation
@@ -332,5 +316,61 @@ namespace UShop.Controllers
             var user = await _userManager.GetUserAsync(User);
             return user?.CustomerId;
         }
+
+        // POST: Orders/UpdateStatus
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int id, OrderStatus newStatus)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .Include(o => o.Sellers)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return NotFound();
+
+            var user = await _userManager.GetUserAsync(User);
+            var isAdmin = User.IsInRole(Roles.Admin);
+            var isSeller = User.IsInRole(Roles.Seller) &&
+                           user?.SellerId != null &&
+                           order.Sellers.Any(s => s.Id == user.SellerId);
+
+            if (!isAdmin && !isSeller)
+                return Forbid(); // not allowed
+
+            if (isSeller)
+            {
+                // Find the index of the current seller
+                var index = order.Sellers.ToList().FindIndex(s => s.Id == user!.SellerId);
+                if (index >= 0)
+                {
+                    // Validate status transition for this seller's current status
+                    if (!IsValidStatusTransition(order.Statuses[index], newStatus))
+                    {
+                        TempData["Error"] = "Invalid status transition";
+                        return RedirectToAction(nameof(Details), new { id });
+                    }
+
+                    // Update only this seller's status
+                    order.Statuses[index] = newStatus;
+                }
+            }
+            else if (isAdmin)
+            {
+                // Admin can update the overall status if you want, or all statuses
+                for (int i = 0; i < order.Statuses.Count; i++)
+                {
+                    if (IsValidStatusTransition(order.Statuses[i], newStatus))
+                        order.Statuses[i] = newStatus;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Order status updated to {newStatus}";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+
     }
 }
