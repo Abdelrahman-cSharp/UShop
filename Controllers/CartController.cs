@@ -7,314 +7,325 @@ using UShop.Models;
 
 namespace UShop.Controllers
 {
-	[Authorize] // only logged-in users can use the cart
-	public class CartController : Controller
-	{
-		private readonly UShopDBContext _context;
-		private readonly UserManager<User> _userManager;
+    [Authorize] // only logged-in users can use the cart
+    public class CartController : Controller
+    {
+        private readonly UShopDBContext _context;
+        private readonly UserManager<User> _userManager;
 
-		public CartController(UShopDBContext context, UserManager<User> userManager)
-		{
-			_context = context;
-			_userManager = userManager;
-		}
+        public CartController(UShopDBContext context, UserManager<User> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
 
-		// helper to get the current logged-in customer's id
-		private async Task<int?> GetCustomerIdAsync()
-		{
-			var user = await _userManager.GetUserAsync(User);
-			return user?.CustomerId;
-		}
+        // helper to get the current logged-in customer's id
+        private async Task<int?> GetCustomerIdAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            return user?.CustomerId;
+        }
 
-		// GET: Cart
-		public async Task<IActionResult> Index()
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+        // GET: Cart
+        public async Task<IActionResult> Index()
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			var cart = await _context.Carts
-				.Include(c => c.Items)
-					.ThenInclude(i => i.Product)
-				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-			if (cart == null)
-			{
-				cart = new Cart { CustomerId = customerId.Value };
-				_context.Carts.Add(cart);
-				await _context.SaveChangesAsync();
-			}
+            if (cart == null)
+            {
+                cart = new Cart { CustomerId = customerId.Value };
+                _context.Carts.Add(cart);
+                await _context.SaveChangesAsync();
+            }
 
-			return View(cart);
-		}
+            return View(cart);
+        }
 
-		// POST: Cart/Add
-		[HttpPost]
-		public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+        // POST: Cart/Add
+        [HttpPost]
+        public async Task<IActionResult> AddToCart(int productId, int quantity = 1)
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			var cart = await _context.Carts
-				.Include(c => c.Items)
-				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
+            var cart = await _context.Carts
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-			if (cart == null)
-			{
-				cart = new Cart { CustomerId = customerId.Value };
-				_context.Carts.Add(cart);
-				await _context.SaveChangesAsync();
-			}
+            if (cart == null)
+            {
+                cart = new Cart { CustomerId = customerId.Value };
+                _context.Carts.Add(cart);
+                await _context.SaveChangesAsync();
+            }
 
-			var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
 
-			if (existingItem != null)
-			{
-				existingItem.Quantity += quantity;
-			}
-			else
-			{
-				var product = await _context.Products.FindAsync(productId);
-				if (product != null)
-				{
-					cart.Items.Add(new Item
-					{
-						ProductId = product.Id,
-						Quantity = quantity,
-						UnitPrice = product.Price
-					});
-				}
-			}
+            if (existingItem != null)
+            {
+                if (existingItem.Product == null)
+                    return BadRequest("Product not found.");
 
-			await _context.SaveChangesAsync();
-			return RedirectToAction(nameof(Index));
-		}
+                // Check if adding the quantity exceeds stock
+                if (existingItem.Quantity + quantity > existingItem.Product.StockQuantity)
+                {
+                    existingItem.Quantity = existingItem.Product.StockQuantity;
+                }
+                else
+                {
+                    existingItem.Quantity += quantity;
+                }
+            }
+            else
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product != null)
+                {
+                    cart.Items.Add(new Item
+                    {
+                        ProductId = product.Id,
+                        Quantity = quantity,
+                        UnitPrice = product.Price
+                    });
+                }
+            }
 
-		// POST: Cart/Remove
-		[HttpPost]
-		public async Task<IActionResult> Remove(int itemId)
-		{
-			var item = await _context.Items.FindAsync(itemId);
-			if (item != null)
-			{
-				_context.Items.Remove(item);
-				await _context.SaveChangesAsync();
-			}
-			return RedirectToAction(nameof(Index));
-		}
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
-		// POST: Cart/UpdateQuantity
-		[HttpPost]
-		public async Task<IActionResult> UpdateQuantity(int itemId, int quantity)
-		{
-			var item = await _context.Items.FindAsync(itemId);
-			if (item != null && quantity > 0)
-			{
-				item.Quantity = quantity;
-				await _context.SaveChangesAsync();
-			}
-			return RedirectToAction(nameof(Index));
-		}
+        // POST: Cart/Remove
+        [HttpPost]
+        public async Task<IActionResult> Remove(int itemId)
+        {
+            var item = await _context.Items.FindAsync(itemId);
+            if (item != null)
+            {
+                _context.Items.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-		// GET: Cart/Checkout
-		[HttpGet]
-		public async Task<IActionResult> Checkout()
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+        // POST: Cart/UpdateQuantity
+        [HttpPost]
+        public async Task<IActionResult> UpdateQuantity(int itemId, int quantity)
+        {
+            var item = await _context.Items.FindAsync(itemId);
+            if (item != null && quantity > 0)
+            {
+                item.Quantity = quantity;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
-			var cart = await _context.Carts
-				.Include(c => c.Items).ThenInclude(i => i.Product)
-				.Include(c => c.Customer).ThenInclude(c => c.CreditCard)
-				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
+        // GET: Cart/Checkout
+        [HttpGet]
+        public async Task<IActionResult> Checkout()
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			if (cart == null || !cart.Items.Any())
-			{
-				TempData["Error"] = "Your cart is empty!";
-				return RedirectToAction(nameof(Index));
-			}
+            var cart = await _context.Carts
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .Include(c => c.Customer).ThenInclude(c => c.CreditCard)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-			var order = new Order
-			{
-				CustomerId = customerId.Value,
-				Customer = cart.Customer,
-				Items = cart.Items.ToList(),
-				OrderDate = DateTime.Now
-			};
+            if (cart == null || !cart.Items.Any())
+            {
+                TempData["Error"] = "Your cart is empty!";
+                return RedirectToAction(nameof(Index));
+            }
 
-			return View(order);
-		}
+            var order = new Order
+            {
+                CustomerId = customerId.Value,
+                Customer = cart.Customer,
+                Items = cart.Items.ToList(),
+                OrderDate = DateTime.Now
+            };
 
-		// POST: Cart/Checkout
-		[HttpPost]
-		public async Task<IActionResult> Checkout(Order order)
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+            return View(order);
+        }
 
-			var cart = await _context.Carts
-				.Include(c => c.Items).ThenInclude(i => i.Product)
-				.Include(c => c.Customer).ThenInclude(c => c.CreditCard)
-				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
+        // POST: Cart/Checkout
+        [HttpPost]
+        public async Task<IActionResult> Checkout(Order order)
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			// Ensure PaymentMethod has a valid value
-			if (order.PaymentMethod == 0)
-				order.PaymentMethod = PaymentMethod.CashOnDelivery;
+            var cart = await _context.Carts
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .Include(c => c.Customer).ThenInclude(c => c.CreditCard)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-			// Handle Credit Card if chosen
-			if (order.PaymentMethod == PaymentMethod.CreditCard && order.Customer?.CreditCard != null)
-			{
-				var customer = cart.Customer;
-				if (customer != null)
-				{
-					if (customer.CreditCard == null)
-					{
-						customer.CreditCard = order.Customer.CreditCard;
-					}
-					else
-					{
-						// Update existing card
-						customer.CreditCard.CardNumber = order.Customer.CreditCard.CardNumber;
-						customer.CreditCard.CardholderName = order.Customer.CreditCard.CardholderName;
-						customer.CreditCard.ExpiryMonth = order.Customer.CreditCard.ExpiryMonth;
-						customer.CreditCard.ExpiryYear = order.Customer.CreditCard.ExpiryYear;
-						customer.CreditCard.CVV = order.Customer.CreditCard.CVV;
-					}
-					await _context.SaveChangesAsync();
-				}
-			}
+            // Ensure PaymentMethod has a valid value
+            if (order.PaymentMethod == 0)
+                order.PaymentMethod = PaymentMethod.CashOnDelivery;
 
-			// Create the order
-			var newOrder = new Order
-			{
-				CustomerId = customerId.Value,
-				OrderDate = DateTime.Now,
-				Status = OrderStatus.Pending,
-				PaymentMethod = order.PaymentMethod,
-				Items = cart.Items.Select(i => new Item
-				{
-					ProductId = i.ProductId,
-					Quantity = i.Quantity,
-					UnitPrice = i.UnitPrice
-				}).ToList()
-			};
+            // Handle Credit Card if chosen
+            if (order.PaymentMethod == PaymentMethod.CreditCard && order.Customer?.CreditCard != null)
+            {
+                var customer = cart.Customer;
+                if (customer != null)
+                {
+                    if (customer.CreditCard == null)
+                    {
+                        customer.CreditCard = order.Customer.CreditCard;
+                    }
+                    else
+                    {
+                        // Update existing card
+                        customer.CreditCard.CardNumber = order.Customer.CreditCard.CardNumber;
+                        customer.CreditCard.CardholderName = order.Customer.CreditCard.CardholderName;
+                        customer.CreditCard.ExpiryMonth = order.Customer.CreditCard.ExpiryMonth;
+                        customer.CreditCard.ExpiryYear = order.Customer.CreditCard.ExpiryYear;
+                        customer.CreditCard.CVV = order.Customer.CreditCard.CVV;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
 
-			_context.Orders.Add(newOrder);
+            // Create the order
+            var newOrder = new Order
+            {
+                CustomerId = customerId.Value,
+                OrderDate = DateTime.Now,
+                Status = OrderStatus.Pending,
+                PaymentMethod = order.PaymentMethod,
+                Items = cart.Items.Select(i => new Item
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity,
+                    UnitPrice = i.UnitPrice
+                }).ToList()
+            };
 
-			// Clear cart
-			_context.Items.RemoveRange(cart.Items);
-			await _context.SaveChangesAsync();
+            _context.Orders.Add(newOrder);
 
-			TempData["Success"] = "Order placed successfully!";
-			return RedirectToAction("Details", "Orders", new { id = newOrder.Id });
-		}
+            // Clear cart
+            _context.Items.RemoveRange(cart.Items);
+            await _context.SaveChangesAsync();
 
-		[HttpGet]
-		public async Task<IActionResult> BuyNow(int productId, int quantity = 1)
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+            TempData["Success"] = "Order placed successfully!";
+            return RedirectToAction("Details", "Orders", new { id = newOrder.Id });
+        }
 
-			var product = await _context.Products.FindAsync(productId);
-			if (product == null)
-				return NotFound();
+        [HttpGet]
+        public async Task<IActionResult> BuyNow(int productId, int quantity = 1)
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			var customer = await _context.Customers
-				.Include(c => c.CreditCard)
-				.FirstOrDefaultAsync(c => c.Id == customerId);
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null)
+                return NotFound();
 
-			var item = new Item
-			{
-				ProductId = product.Id,
-				Quantity = quantity,
-				UnitPrice = product.Price,
-				Product = product
-			};
+            var customer = await _context.Customers
+                .Include(c => c.CreditCard)
+                .FirstOrDefaultAsync(c => c.Id == customerId);
 
-			var order = new Order
-			{
-				CustomerId = customerId.Value,
-				Customer = customer,
-				Items = new List<Item> { item },
-				OrderDate = DateTime.Now
-			};
+            var item = new Item
+            {
+                ProductId = product.Id,
+                Quantity = quantity,
+                UnitPrice = product.Price,
+                Product = product
+            };
 
-			return View(order);
-		}
+            var order = new Order
+            {
+                CustomerId = customerId.Value,
+                Customer = customer,
+                Items = new List<Item> { item },
+                OrderDate = DateTime.Now
+            };
 
-		[HttpPost]
-		public async Task<IActionResult> BuyNow(Order order, int productId, int quantity = 1)
-		{
-			var customerId = await GetCustomerIdAsync();
-			if (customerId == null)
-				return Unauthorized();
+            return View(order);
+        }
 
-			var cart = await _context.Carts
-				.Include(c => c.Items).ThenInclude(i => i.Product)
-				.Include(c => c.Customer).ThenInclude(c => c.CreditCard)
-				.FirstOrDefaultAsync(c => c.CustomerId == customerId);
+        [HttpPost]
+        public async Task<IActionResult> BuyNow(Order order, int productId, int quantity = 1)
+        {
+            var customerId = await GetCustomerIdAsync();
+            if (customerId == null)
+                return Unauthorized();
 
-			// Ensure PaymentMethod has a valid value
-			if (order.PaymentMethod == 0)
-				order.PaymentMethod = PaymentMethod.CashOnDelivery;
+            var cart = await _context.Carts
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .Include(c => c.Customer).ThenInclude(c => c.CreditCard)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
 
-			// Handle Credit Card if chosen
-			if (order.PaymentMethod == PaymentMethod.CreditCard && order.Customer?.CreditCard != null)
-			{
-				var customer = cart.Customer;
-				if (customer != null)
-				{
-					if (customer.CreditCard == null)
-					{
-						customer.CreditCard = order.Customer.CreditCard;
-					}
-					else
-					{
-						// Update existing card
-						customer.CreditCard.CardNumber = order.Customer.CreditCard.CardNumber;
-						customer.CreditCard.CardholderName = order.Customer.CreditCard.CardholderName;
-						customer.CreditCard.ExpiryMonth = order.Customer.CreditCard.ExpiryMonth;
-						customer.CreditCard.ExpiryYear = order.Customer.CreditCard.ExpiryYear;
-						customer.CreditCard.CVV = order.Customer.CreditCard.CVV;
-					}
-					await _context.SaveChangesAsync();
-				}
-			}
-			var product = await _context.Products.FindAsync(productId);
-			if (product == null)
-				return NotFound();
+            // Ensure PaymentMethod has a valid value
+            if (order.PaymentMethod == 0)
+                order.PaymentMethod = PaymentMethod.CashOnDelivery;
 
-			var item = new Item
-			{
-				ProductId = product.Id,
-				Quantity = quantity,
-				UnitPrice = product.Price,
-				Product = product
-			};
+            // Handle Credit Card if chosen
+            if (order.PaymentMethod == PaymentMethod.CreditCard && order.Customer?.CreditCard != null)
+            {
+                var customer = cart.Customer;
+                if (customer != null)
+                {
+                    if (customer.CreditCard == null)
+                    {
+                        customer.CreditCard = order.Customer.CreditCard;
+                    }
+                    else
+                    {
+                        // Update existing card
+                        customer.CreditCard.CardNumber = order.Customer.CreditCard.CardNumber;
+                        customer.CreditCard.CardholderName = order.Customer.CreditCard.CardholderName;
+                        customer.CreditCard.ExpiryMonth = order.Customer.CreditCard.ExpiryMonth;
+                        customer.CreditCard.ExpiryYear = order.Customer.CreditCard.ExpiryYear;
+                        customer.CreditCard.CVV = order.Customer.CreditCard.CVV;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null)
+                return NotFound();
 
-			// Create the order
-			var newOrder = new Order
-			{
-				CustomerId = customerId.Value,
-				OrderDate = DateTime.Now,
-				Status = OrderStatus.Pending,
-				PaymentMethod = order.PaymentMethod,
-				Items = new List<Item> { item }
-			};
+            var item = new Item
+            {
+                ProductId = product.Id,
+                Quantity = quantity,
+                UnitPrice = product.Price,
+                Product = product
+            };
 
-			_context.Orders.Add(newOrder);
+            // Create the order
+            var newOrder = new Order
+            {
+                CustomerId = customerId.Value,
+                OrderDate = DateTime.Now,
+                Status = OrderStatus.Pending,
+                PaymentMethod = order.PaymentMethod,
+                Items = new List<Item> { item }
+            };
 
-			// Clear cart
-			_context.Items.RemoveRange(cart.Items);
-			await _context.SaveChangesAsync();
+            _context.Orders.Add(newOrder);
 
-			TempData["Success"] = "Order placed successfully!";
-			return RedirectToAction("Details", "Orders", new { id = newOrder.Id });
-		}
+            // Clear cart
+            _context.Items.RemoveRange(cart.Items);
+            await _context.SaveChangesAsync();
 
-	}
+            TempData["Success"] = "Order placed successfully!";
+            return RedirectToAction("Details", "Orders", new { id = newOrder.Id });
+        }
+
+    }
 }

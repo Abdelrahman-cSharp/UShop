@@ -41,6 +41,7 @@
 								<form asp-action="UpdateQuantity" method="post" class="d-inline">
 									<input type="hidden" name="itemId" value="@item.Id" />
 									<input type="number" name="quantity" value="@item.Quantity" min="1"
+										   max="@(item?.Product?.StockQuantity > 0 ? item.Product.StockQuantity : 1)"
 												 class="form-control d-inline text-center rounded-pill me-2"
 												 style="width:80px; display:inline-block;" />
 									<button type="submit"
