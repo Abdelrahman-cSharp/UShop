@@ -37,5 +37,6 @@ namespace UShop.Models
 		public int? SellerId { get; set; }
 		[ValidateNever]
 		public Seller? Seller { get; set; }
-	}
+       // public string ExpiryDate { get; set; }
+    }
 }

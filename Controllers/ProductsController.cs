@@ -162,15 +162,31 @@ namespace UShop.Controllers
 			{
 				if (ModelState.IsValid)
 				{
-					var product = new Product
+                    var currentUser = await _userManager.GetUserAsync(User);
+
+                    if (currentUser == null)
+                    {
+                        return Challenge(); // forces login
+                    }
+
+                    if (currentUser.SellerId == null)
+                    {
+                        ModelState.AddModelError(string.Empty,
+                            "Your account is not linked to a seller profile. Please contact admin.");
+                        productVM.CategoryList = await GetCategoryList();
+                        productVM.SellerList = await GetSellerList();
+                        return View(productVM);
+                    }
+
+                    var product = new Product
 					{
 						Name = productVM.Name,
 						Description = productVM.Description,
 						Price = productVM.Price,
 						StockQuantity = productVM.StockQuantity,
 						CategoryId = productVM.CategoryId,
-						SellerId = productVM.SellerId
-					};
+                        SellerId = currentUser.SellerId.Value // safe now
+                    };
 
 					// Handle image upload
 					if (productVM.ImageFile != null)

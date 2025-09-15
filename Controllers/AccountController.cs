@@ -5,252 +5,468 @@ using Microsoft.EntityFrameworkCore;
 using UShop.Data;
 using UShop.Models;
 
+
 namespace UshopFront.Controllers
 {
-	[Authorize]
-	public class AccountController : Controller
-	{
-		private readonly UserManager<User> _userManager;
-		private readonly SignInManager<User> _signInManager;
-		private readonly UShopDBContext _context;
+    [Authorize]
+    public class AccountController : Controller
+    {
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UShopDBContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-		public AccountController(
-			UserManager<User> userManager,
-			SignInManager<User> signInManager,
-			UShopDBContext context)
-		{
-			_userManager = userManager;
-			_signInManager = signInManager;
-			_context = context;
-		}
+        public AccountController(UserManager<User> userManager,
+                                 SignInManager<User> signInManager,
+                                 UShopDBContext context,
+                                 IWebHostEnvironment environment)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _context = context;
+            _environment = environment;
+        }
 
-		// ------------------------------
-		// LOGIN
-		// ------------------------------
-		[AllowAnonymous]
-		public IActionResult Login() => View();
+        // ------------------------------
+        // LOGIN
+        // ------------------------------
+        [AllowAnonymous]
+        public IActionResult Login() => View();
 
-		[HttpPost]
-		[AllowAnonymous]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Login(Login model)
-		{
-			if (!ModelState.IsValid) return View(model);
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(Login model)
+        {
+            if (!ModelState.IsValid) return View(model);
 
-			var result = await _signInManager.PasswordSignInAsync(
-				model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
 
-			if (result.Succeeded)
-			{
-				TempData["Message"] = "Login successful!";
-				return RedirectToAction("Index", "Home");
-			}
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Login successful!";
+                return RedirectToAction("Index", "Home");
+            }
 
-			ModelState.AddModelError(string.Empty, "Invalid login credentials.");
-			return View(model);
-		}
+            ModelState.AddModelError(string.Empty, "Invalid login credentials.");
+            return View(model);
+        }
 
-		// ------------------------------
-		// REGISTER
-		// ------------------------------
-		[AllowAnonymous]
-		public IActionResult Register() => View();
+        // ------------------------------
+        // REGISTER
+        // ------------------------------
+        [AllowAnonymous]
+        public IActionResult Register() => View();
 
-		[HttpPost]
-		[AllowAnonymous]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Register(Register model)
-		{
-			if (!ModelState.IsValid) return View(model);
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(Register model)
+        {
+            if (!ModelState.IsValid) return View(model);
 
-			var user = new User
-			{
-				UserName = model.Email,
-				Email = model.Email,
-				UserType = model.UserType
-			};
+            var user = new User
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                UserType = model.UserType
+            };
 
-			var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-			if (result.Succeeded)
-			{
-				// Assign role based on UserType
-				await _userManager.AddToRoleAsync(user, model.UserType.ToString());
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, model.UserType.ToString());
 
-				// Create profile entity
-				switch (model.UserType)
-				{
-					case UserType.Admin:
-						_context.Admins.Add(new Admin
-						{
-							FullName = model.FullName,
-							Email = model.Email,
-							Description = "New admin account",
-							User = user
-						});
-						break;
+                switch (model.UserType)
+                {
+                    case UserType.Admin:
+                        var admin = new Admin
+                        {
+                            FullName = model.FullName,
+                            Email = model.Email,
+                            Description = "New admin account"
+                        };
+                        _context.Admins.Add(admin);
+                        await _context.SaveChangesAsync();
+                        user.AdminId = admin.Id;
+                        break;
 
-					case UserType.Customer:
-						_context.Customers.Add(new Customer
-						{
-							FullName = model.FullName,
-							Email = model.Email,
-							User = user
-						});
-						break;
+                    case UserType.Customer:
+                        var customer = new Customer
+                        {
+                            FullName = model.FullName,
+                            Email = model.Email
+                        };
+                        _context.Customers.Add(customer);
+                        await _context.SaveChangesAsync();
+                        user.CustomerId = customer.Id;
+                        break;
 
-					case UserType.Seller:
-						_context.Sellers.Add(new Seller
-						{
-							FullName = model.FullName,
-							Email = model.Email,
-							User = user
-						});
-						break;
-				}
+                    case UserType.Seller:
+                        var seller = new Seller
+                        {
+                            FullName = model.FullName,
+                            Email = model.Email
+                        };
+                        _context.Sellers.Add(seller);
+                        await _context.SaveChangesAsync();
+                        user.SellerId = seller.Id;
+                        break;
+                }
 
-				await _context.SaveChangesAsync();
-				await _signInManager.SignInAsync(user, isPersistent: false);
-				TempData["Message"] = "Registration successful!";
-				return RedirectToAction("Index", "Home");
-			}
+                await _userManager.UpdateAsync(user);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                TempData["Success"] = "Registration successful!";
+                return RedirectToAction("Index", "Home");
+            }
 
-			foreach (var error in result.Errors)
-				ModelState.AddModelError(string.Empty, error.Description);
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
 
-			return View(model);
-		}
+            return View(model);
+        }
 
-		// ------------------------------
-		// PROFILE
-		// ------------------------------
-		public async Task<IActionResult> Profile()
-		{
-			var user = await _userManager.GetUserAsync(User);
-			if (user == null) return RedirectToAction("Login");
+        // ------------------------------
+        // PROFILE
+        // ------------------------------
+        public async Task<IActionResult> Profile(string? userId = null)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
 
-			switch (user.UserType)
-			{
-				case UserType.Admin:
-					var admin = await _context.Admins.FirstOrDefaultAsync(a => a.User!.Id == user.Id);
-					return View("AdminProfile", admin);
+            var targetUserId = userId ?? currentUser.Id;
 
-				case UserType.Customer:
-					var customer = await _context.Customers
-						.Include(c => c.Cart)
-						.Include(c => c.Orders)
-						.Include(c => c.Address)
-						.Include(c => c.CreditCard)
-						.FirstOrDefaultAsync(c => c.User!.Id == user.Id);
-					return View("CustomerProfile", customer);
+            if (targetUserId != currentUser.Id && !User.IsInRole("Admin"))
+                return Forbid();
 
-				case UserType.Seller:
-					var seller = await _context.Sellers
-						.Include(s => s.Products)
-						.FirstOrDefaultAsync(s => s.User!.Id == user.Id);
-					return View("SellerProfile", seller);
+            var viewModel = await GetUserProfileViewModelAsync(targetUserId, currentUser);
+            if (viewModel is null) return NotFound();
 
-				default:
-					return NotFound("Profile not found");
-			}
-		}
+            return View(viewModel);
+        }
 
-		[HttpGet]
-		public async Task<IActionResult> EditProfile()
-		{
-			var user = await _userManager.GetUserAsync(User);
-			if (user == null) return RedirectToAction("Login");
+        // ------------------------------
+        // CREDIT CARD MANAGEMENT
+        // ------------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCard(string CardNumber, string CardholderName, int ExpiryMonth, int ExpiryYear, string CVV)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                TempData["Error"] = "You must be logged in to add a credit card.";
+                return RedirectToAction("Login");
+            }
 
-			return user.UserType switch
-			{
-				UserType.Admin => View("EditAdminProfile", await _context.Admins.FirstOrDefaultAsync(a => a.User!.Id == user.Id)),
-				UserType.Customer => View("EditCustomerProfile", await _context.Customers.FirstOrDefaultAsync(c => c.User!.Id == user.Id)),
-				UserType.Seller => View("EditSellerProfile", await _context.Sellers.FirstOrDefaultAsync(s => s.User!.Id == user.Id)),
-				_ => NotFound("Profile not found")
-			};
-		}
+            CardNumber = CardNumber?.Replace(" ", "") ?? "";
+            if (CardNumber.Length < 13 || CardNumber.Length > 19)
+            {
+                TempData["Error"] = "Invalid card number.";
+                return RedirectToAction("Profile");
+            }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> EditAdminProfile(Admin model)
-		{
-			if (!ModelState.IsValid) return View(model);
-			_context.Admins.Update(model);
-			await _context.SaveChangesAsync();
-			return RedirectToAction("Profile");
-		}
+            if (ExpiryMonth < 1 || ExpiryMonth > 12 ||
+                ExpiryYear < DateTime.Now.Year ||
+                (ExpiryYear == DateTime.Now.Year && ExpiryMonth < DateTime.Now.Month))
+            {
+                TempData["Error"] = "Card has expired.";
+                return RedirectToAction("Profile");
+            }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> EditCustomerProfile(Customer model)
-		{
-			if (!ModelState.IsValid) return View(model);
-			_context.Customers.Update(model);
-			await _context.SaveChangesAsync();
-			return RedirectToAction("Profile");
-		}
+            if (string.IsNullOrWhiteSpace(CVV) || CVV.Length is < 3 or > 4)
+            {
+                TempData["Error"] = "Invalid CVV.";
+                return RedirectToAction("Profile");
+            }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> EditSellerProfile(Seller model)
-		{
-			if (!ModelState.IsValid) return View(model);
-			_context.Sellers.Update(model);
-			await _context.SaveChangesAsync();
-			return RedirectToAction("Profile");
-		}
+            try
+            {
+                var card = new CreditCard
+                {
+                    CardNumber = CardNumber,
+                    CardholderName = CardholderName,
+                    ExpiryMonth = ExpiryMonth,
+                    ExpiryYear = ExpiryYear,
+                    CVV = CVV
+                };
 
-		// ------------------------------
-		// LOGOUT
-		// ------------------------------
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Logout()
-		{
-			await _signInManager.SignOutAsync();
-			TempData["Message"] = "You have been logged out.";
-			return RedirectToAction("Login");
-		}
+                switch (currentUser.UserType)
+                {
+                    case UserType.Customer:
+                        if (currentUser.CustomerId.HasValue)
+                            card.CustomerId = currentUser.CustomerId.Value;
+                        else
+                        {
+                            TempData["Error"] = "Customer profile not found.";
+                            return RedirectToAction("Profile");
+                        }
+                        break;
 
-		[HttpGet]
-		public async Task<IActionResult> LogoutGet()
-		{
-			await _signInManager.SignOutAsync();
-			TempData["Message"] = "You have been logged out.";
-			return RedirectToAction("Login");
-		}
+                    case UserType.Seller:
+                        if (currentUser.SellerId.HasValue)
+                            card.SellerId = currentUser.SellerId.Value;
+                        else
+                        {
+                            TempData["Error"] = "Seller profile not found.";
+                            return RedirectToAction("Profile");
+                        }
+                        break;
 
-		// ------------------------------
-		// NEW FUNCTIONS TO VIEW PROFILE BY TYPE
-		// ------------------------------
-		public async Task<IActionResult> ViewProfileCustomer(int id)
-		{
-			var customer = await _context.Customers
-				.Include(c => c.Cart)
-				.Include(c => c.Orders)
-				.Include(c => c.Address)
-				.Include(c => c.CreditCard)
-				.FirstOrDefaultAsync(c => c.Id == id);
+                    default:
+                        TempData["Error"] = "Only customers and sellers can add credit cards.";
+                        return RedirectToAction("Profile");
+                }
 
-			if (customer == null) return NotFound();
-			return View("CustomerProfile", customer);
-		}
+                _context.CreditCards.Add(card);
+                await _context.SaveChangesAsync();
 
-		public async Task<IActionResult> ViewProfileSeller(int id)
-		{
-			var seller = await _context.Sellers
-				.Include(s => s.Products)
-				.FirstOrDefaultAsync(s => s.Id == id);
+                TempData["Success"] = "Credit card added successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error adding credit card: " + ex.Message;
+            }
 
-			if (seller == null) return NotFound();
-			return View("SellerProfile", seller);
-		}
+            return RedirectToAction("Profile");
+        }
 
-		public async Task<IActionResult> ViewProfileAdmin(int id)
-		{
-			var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Id == id);
-			if (admin == null) return NotFound();
-			return View("AdminProfile", admin);
-		}
-	}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCard(int id)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
+
+            var card = await _context.CreditCards.FindAsync(id);
+            if (card == null)
+            {
+                TempData["Error"] = "Card not found.";
+                return RedirectToAction("Profile");
+            }
+
+            bool canDelete = false;
+            if (currentUser.UserType == UserType.Customer && card.CustomerId == currentUser.CustomerId)
+                canDelete = true;
+            else if (currentUser.UserType == UserType.Seller && card.SellerId == currentUser.SellerId)
+                canDelete = true;
+            else if (User.IsInRole("Admin"))
+                canDelete = true;
+
+            if (!canDelete)
+            {
+                TempData["Error"] = "You don't have permission to delete this card.";
+                return RedirectToAction("Profile");
+            }
+
+            _context.CreditCards.Remove(card);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Card deleted successfully!";
+
+            return RedirectToAction("Profile");
+        }
+
+        // ------------------------------
+        // LOGOUT
+        // ------------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            TempData["Info"] = "You have been logged out.";
+            return RedirectToAction("Login");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(UserProfileViewModel model)
+        {
+            if (!ModelState.IsValid) return RedirectToAction("Profile");
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
+
+            // Update based on user type
+            switch (currentUser.UserType)
+            {
+                case UserType.Customer:
+                    var customer = await _context.Customers
+                        .FirstOrDefaultAsync(c => c.Id == model.Id);
+                    if (customer != null)
+                    {
+                        customer.FullName = model.FullName;
+                        customer.PhoneNumber = model.PhoneNumber;
+                    }
+                    break;
+
+                case UserType.Seller:
+                    var seller = await _context.Sellers
+                        .FirstOrDefaultAsync(s => s.Id == model.Id);
+                    if (seller != null)
+                    {
+                        seller.FullName = model.FullName;
+                        seller.PhoneNumber = model.PhoneNumber;
+                    }
+                    break;
+
+                case UserType.Admin:
+                    var admin = await _context.Admins
+                        .FirstOrDefaultAsync(a => a.Id == model.Id);
+                    if (admin != null)
+                    {
+                        admin.FullName = model.FullName;
+                        admin.Description = model.Description;
+                    }
+                    break;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
+
+        // ------------------------------
+        // HELPERS
+        // ------------------------------
+        private async Task<UserProfileViewModel?> GetUserProfileViewModelAsync(string userId, User currentUser)
+        {
+            var targetUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (targetUser == null) return null;
+
+            var viewModel = new UserProfileViewModel
+            {
+                UserId = userId,
+                UserType = targetUser.UserType,
+                Email = targetUser.Email ?? string.Empty,
+                IsOwnProfile = currentUser.Id == userId,
+            };
+
+            switch (targetUser.UserType)
+            {
+                case UserType.Admin:
+                    var admin = await _context.Admins.FirstOrDefaultAsync(a => a.User != null && a.User.Id == userId);
+                    if (admin != null)
+                    {
+                        viewModel.Id = admin.Id;
+                        viewModel.FullName = admin.FullName;
+                        viewModel.Description = admin.Description;
+                    }
+                    break;
+
+                case UserType.Customer:
+                    var customer = await _context.Customers
+                        .Include(c => c.Address)
+                        .Include(c => c.Orders)
+                        .FirstOrDefaultAsync(c => c.User != null && c.User.Id == userId);
+
+                    if (customer != null)
+                    {
+                        viewModel.Id = customer.Id;
+                        viewModel.FullName = customer.FullName;
+                        viewModel.PhoneNumber = customer.PhoneNumber;
+                        viewModel.ImageUrl = customer.ImageUrl;
+                        viewModel.Address = customer.Address;
+
+                        viewModel.CreditCards = await _context.CreditCards
+                            .Where(cc => cc.CustomerId == customer.Id)
+                            .ToListAsync();
+
+                        viewModel.Orders = customer.Orders?.OrderByDescending(o => o.OrderDate).Take(5).ToList();
+                        viewModel.OrdersCount = customer.Orders?.Count() ?? 0;
+                        viewModel.TotalSpent = customer.Orders?.Sum(o => o.TotalAmount) ?? 0;
+                    }
+                    break;
+
+                case UserType.Seller:
+                    var seller = await _context.Sellers
+                        .Include(s => s.Products)
+                        .FirstOrDefaultAsync(s => s.User != null && s.User.Id == userId);
+
+                    if (seller != null)
+                    {
+                        viewModel.Id = seller.Id;
+                        viewModel.FullName = seller.FullName;
+                        viewModel.PhoneNumber = seller.PhoneNumber;
+                        viewModel.ImageUrl = seller.ImageUrl;
+                        viewModel.Products = seller.Products?.Take(10).ToList();
+
+                        viewModel.CreditCards = await _context.CreditCards
+                            .Where(cc => cc.SellerId == seller.Id)
+                            .ToListAsync();
+
+                        viewModel.ProductsCount = seller.Products?.Count() ?? 0;
+                    }
+                    break;
+            }
+
+            return viewModel;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadProfileImage(IFormFile profileImage)
+        {
+            if (profileImage == null || profileImage.Length == 0)
+                return RedirectToAction("Profile");
+
+            // Save file to /wwwroot/images/avatars
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "images", "avatars");
+            Directory.CreateDirectory(uploadsPath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(profileImage.FileName)}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            await using (var stream = System.IO.File.Create(filePath))
+            {
+                await profileImage.CopyToAsync(stream);
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null) return RedirectToAction("Login");
+
+            // Decide where to store the URL
+            switch (currentUser.UserType)
+            {
+                case UserType.Customer:
+                    if (currentUser.CustomerId.HasValue)
+                    {
+                        var customer = await _context.Customers
+                            .FirstOrDefaultAsync(c => c.Id == currentUser.CustomerId);
+                        if (customer != null)
+                        {
+                            customer.ImageUrl = $"/images/avatars/{fileName}";
+                            _context.Update(customer);
+                        }
+                    }
+                    break;
+
+                case UserType.Seller:
+                    if (currentUser.SellerId.HasValue)
+                    {
+                        var seller = await _context.Sellers
+                            .FirstOrDefaultAsync(s => s.Id == currentUser.SellerId);
+                        if (seller != null)
+                        {
+                            seller.ImageUrl = $"/images/avatars/{fileName}";
+                            _context.Update(seller);
+                        }
+                    }
+                    break;
+
+                default:
+                    // Admins could have their own table/logic if needed
+                    TempData["Error"] = "Only customers or sellers can upload a profile image.";
+                    return RedirectToAction("Profile");
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Profile image updated!";
+            return RedirectToAction("Profile");
+        }
+
+    }
 }
