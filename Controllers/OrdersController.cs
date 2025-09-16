@@ -216,9 +216,12 @@ namespace UShop.Controllers
             // Define valid status transitions
             return currentStatus switch
             {
-                OrderStatus.Pending => newStatus == OrderStatus.Ordered || newStatus == OrderStatus.Cancelled,
+                OrderStatus.Pending => newStatus == OrderStatus.Ordered
+                || newStatus == OrderStatus.Cancelled
+                || newStatus == OrderStatus.Shipped,
                 OrderStatus.Ordered => newStatus == OrderStatus.Shipped || newStatus == OrderStatus.Cancelled,
-                OrderStatus.Shipped => newStatus == OrderStatus.Delivered,
+                OrderStatus.Shipped => newStatus == OrderStatus.OutForDelivery,
+                OrderStatus.OutForDelivery => newStatus == OrderStatus.Delivered,
                 OrderStatus.Delivered => false, // No transitions from delivered
                 OrderStatus.Cancelled => false, // No transitions from cancelled
                 _ => false
@@ -362,6 +365,7 @@ namespace UShop.Controllers
 
                     // Update only this seller's status
                     order.Statuses[index] = newStatus;
+                    order.Status = order.Statuses.All(s => s == newStatus) ? newStatus : order.Status;
                 }
             }
             else if (isAdmin)
