@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using UShop.Data
 @using UShop.Models
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,118 +154,142 @@
 </head>
 <body>
 	<header>
-		<nav class="navbar navbar-expand-sm navbar-custom shadow-sm">
-			<div class="container-fluid">
-				<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">🛒 UShop</a>
-				<button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
-					<span class="navbar-toggler-icon"></span>
+		<!-- New Nav-->
+		<nav class="ushop-navbar-001">
+			<div class="ushop-nav-container-002">
+				<!-- Logo -->
+				<a class="ushop-logo-003" asp-controller="Home" asp-action="Index">
+					<i class="fas fa-shopping-bag"></i>
+					U<span>SHOP</span>
+				</a>
+
+				<!-- Hamburger Menu (Mobile) -->
+				<button class="ushop-hamburger-004" id="hamburgerBtn">
+					<span></span>
+					<span></span>
+					<span></span>
 				</button>
-				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-					<ul class="navbar-nav me-auto">
-						<li class="nav-item">
-							@await Html.PartialAsync("_SearchBar")
-						</li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Shopping">Products</a></li>
-						<li class="nav-item"><a class="nav-link" asp-controller="Categories" asp-action="Index">Categories</a></li>
-					</ul>
 
-					<ul class="navbar-nav">
-						@if (User.IsInRole(Roles.Customer))
-						{
-							<li class="nav-item"><a class="nav-link" asp-controller="Wishlist" asp-action="Index">❤️Wishlist</a></li>
-							<li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">🛒Cart</a></li>
+				<!-- Navigation Links -->
+				<ul class="ushop-nav-links-005" id="navLinks">
+					<li><a asp-area="" asp-controller="Seller" asp-action="Browse" class="ushop-nav-link-006"><i class="fas fa-store"></i>Sellers</a></li>
+					<li><a asp-area="" asp-controller="Categories" asp-action="Index" class="ushop-nav-link-006"><i class="fas fa-list"></i>Categories</a></li>
+					<li><a asp-area="" asp-controller="Products" asp-action="Shopping" class="ushop-nav-link-006"><i class="fas fa-tag"></i>Products</a></li>
+				</ul>
+
+				<!-- Search Bar -->
+				<div class="ushop-search-container-008">
+					<form asp-controller="Products" asp-action="Shopping" method="get" class="d-flex">
+						<input type="text"
+							   placeholder="Search for products, brands, and more..."
+							   name="searchString"
+							   value="@(ViewData["CurrentFilter"] ?? string.Empty)"
+							   id="searchInput"
+							   class="form-control me-2" />
+						<button type="submit" class="btn btn-primary ushop-search-btn-009" id="searchBtn">
+							<i class="fas fa-search"></i>
+						</button>
+					</form>
+					<style>
+						.ushop-search-container-008 form {
+							display: flex;
+							align-items: center;
 						}
+					</style>
+				</div>
 
-						@if (User.IsInRole(Roles.Seller))
-						{
-							<li>
-								<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Products" asp-action="Index">
-									<i class="fas fa-box me-2 text-info"></i>My Products
-								</a>
-							</li>
-						}
 
-						<li>
-							<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Orders" asp-action="Index">
-								<i class="fas fa-shopping-bag me-2 text-info"></i>My Orders
-							</a>
-						</li>
-
+				<!-- Icons & User Menu -->
+				<div class="ushop-nav-icons-010">
+					@* <!-- Wishlist -->
+					<a href="#" class="ushop-icon-button-011" title="Wishlist">
+						<i class="fas fa-heart"></i>
+						<span class="ushop-wishlist-count-012">3</span>
+					</a> *@
+					@if (User.IsInRole(Roles.Customer))
+					{
+						<!-- Shopping Cart -->
+						<a asp-controller="Cart" asp-action="Index"
+						   class="ushop-icon-button-011" title="Shopping Cart">
+							<i class="fas fa-shopping-cart"></i>
+							<span class="ushop-cart-count-013">5</span>
+						</a>
+					}
+					else if (User.IsInRole(Roles.Seller))
+					{
+						<!-- Seller Dashboard -->
+						<a asp-controller="Products" asp-action="Index"
+						   class="ushop-nav-link-006" title="Seller Dashboard">
+							<i class="fas fa-store"></i>My Products
+						</a>
+					}
+					else if (User.IsInRole(Roles.Admin))
+					{
 						<!-- Admin Dropdown Menu -->
-						@if (User.IsInRole(Roles.Admin))
-						{
-							<li class="nav-item dropdown">
-								<a class="nav-link dropdown-toggle fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									⚙️ Administration
-								</a>
-								<ul class="dropdown-menu-admin dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2" aria-labelledby="adminDropdown">
-									<li>
-										<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Customer" asp-action="Index">
+						<nav class="navbar navbar-expand-lg">
+							<ul class="navbar-nav">
+								<li class="nav-item dropdown position-relative">
+									<a class="nav-link dropdown-toggle ushop-nav-link-006" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+										⚙️ Administration
+									</a>
+									<ul class="dropdown-menu ushop-dropdown-content-016 dropdown-menu-end shadow-lg border-0 rounded-3 p-2" aria-labelledby="adminDropdown">
+										<a class="dropdown-item" asp-controller="Customer" asp-action="Index">
 											👤 Customers
 										</a>
-									</li>
-									<li>
-										<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Seller" asp-action="Browse">
+										<a class="dropdown-item" asp-controller="Seller" asp-action="Browse">
 											🛍️ Sellers
 										</a>
-									</li>
-									<li>
-										<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Admin" asp-action="Index">
+										<a class="dropdown-item" asp-controller="Admin" asp-action="Index">
 											🛠️ Admins
 										</a>
-									</li>
-									<li>
-										<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Products" asp-action="Index">
+										<a class="dropdown-item" asp-controller="Products" asp-action="Index">
 											📦 All Products
 										</a>
-									</li>
-								</ul>
-							</li>
-						}
+									</ul>
+								</li>
+							</ul>
+						</nav>
+					}
 
 
-						<!-- User Profile Dropdown -->
-						@if (User?.Identity?.IsAuthenticated == true)
-						{
-							<li class="nav-item dropdown profile-dropdown">
-								<a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									<img src="/images/avatars/default.png" alt="Profile" class="profile-avatar-small me-2" />
-									<span>@(User.Identity.Name?.Split('@')[0] ?? "User")</span>
-								</a>
-								<ul class="dropdown-menu dropdown-menu-profile dropdown-menu-end shadow-lg border-0 rounded-3 p-2" aria-labelledby="profileDropdown">
-									<li>
-										<a class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3" asp-controller="Account" asp-action="Profile">
-											<i class="fas fa-user me-2 text-primary"></i>My Profile
-										</a>
-									</li>
-									<li><hr class="dropdown-divider"></li>
+					<!-- User Menu -->
+					<div class="ushop-user-menu-014">
+						<button class="ushop-user-btn-015" id="accountButton">
+							<i class="fas fa-user-circle"></i> Account
+						</button>
+						<div class="ushop-dropdown-content-016" id="dropdownMenu">
+							<a asp-controller="Account" asp-action="Profile"><i class="fas fa-user"></i>My Profile</a>
+							<a asp-controller="Orders" asp-action="Index"><i class="fas fa-box"></i>My Orders</a>
+							@if (User.IsInRole(Roles.Customer))
+							{
+								<a href="#"><i class="fas fa-heart"></i>Wishlist</a>
+							}
+							<form method="post" asp-controller="Account" asp-action="Logout" class="d-inline w-100">
+								<button type="submit" class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3 border-0 bg-transparent w-100 text-start">
+									<i class="fas fa-sign-out-alt me-2 text-danger"></i>Logout
+								</button>
+							</form>
+						</div>
+					</div>
+					<script>
+						document.addEventListener("DOMContentLoaded", function () {
+							const accountButton = document.getElementById("accountButton");
+							const dropdownMenu = document.getElementById("dropdownMenu");
 
-									<li><hr class="dropdown-divider"></li>
-									<li>
-										<form method="post" asp-controller="Account" asp-action="Logout" class="d-inline w-100">
-											<button type="submit" class="dropdown-item dropdown-item-profile rounded-2 py-2 px-3 border-0 bg-transparent w-100 text-start">
-												<i class="fas fa-sign-out-alt me-2 text-danger"></i>Logout
-											</button>
-										</form>
-									</li>
-								</ul>
-							</li>
-						}
-						else
-						{
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="Account" asp-action="Login">
-									<i class="fas fa-sign-in-alt me-1"></i>Login
-								</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" asp-controller="Account" asp-action="Register">
-									<i class="fas fa-user-plus me-1"></i>Register
-								</a>
-							</li>
-						}
+							if (accountButton && dropdownMenu) {
+								accountButton.addEventListener("click", function (e) {
+									e.stopPropagation();
+									dropdownMenu.classList.toggle("show");
+								});
 
-					</ul>
+								// Close if click outside
+								document.addEventListener("click", function () {
+									dropdownMenu.classList.remove("show");
+								});
+							}
+						});
+					</script>
+
 				</div>
 			</div>
 		</nav>
@@ -334,6 +359,638 @@
 			});
 		});
 	</script>
+	<style>
+		/* Navbar gradient */
+		.navbar-custom {
+			background: linear-gradient(90deg, #ff6f61, #ffcc70, #6a82fb);
+		}
+
+			.navbar-custom .nav-link,
+			.navbar-custom .navbar-brand {
+				color: white !important;
+				font-weight: 600;
+			}
+
+				.navbar-custom .nav-link:hover {
+					text-decoration: none;
+				}
+
+		/* Hero Section */
+		.hero {
+			background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4);
+			padding: 50px 20px;
+			text-align: center;
+			border-radius: 12px;
+			color: #333;
+			margin-bottom: 20px;
+		}
+
+			.hero h1 {
+				font-size: 3rem;
+				font-weight: bold;
+			}
+
+			.hero p {
+				font-size: 1.2rem;
+				margin-bottom: 15px;
+			}
+
+		/* Buttons */
+		.btn-ushop {
+			background: linear-gradient(90deg, #ff6f61, #6a82fb);
+			color: white;
+			border: none;
+			border-radius: 25px;
+			padding: 10px 25px;
+			font-weight: bold;
+			transition: 0.3s;
+		}
+
+			.btn-ushop:hover {
+				background: linear-gradient(90deg, #6a82fb, #ff6f61);
+				transform: scale(1.05);
+				color: white;
+			}
+
+		/* Footer */
+		footer {
+			background: linear-gradient(90deg, #6a82fb, #ffcc70);
+			color: white;
+			padding: 15px 0;
+			text-align: center;
+			font-weight: 500;
+		}
+
+			footer a {
+				color: #ffe;
+				text-decoration: underline;
+			}
+
+		/* Profile dropdown styles */
+		.profile-dropdown {
+			position: relative;
+		}
+
+		.profile-avatar-small {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid white;
+		}
+
+		@@media (min-width: 992px) {
+			.nav-item.dropdown:hover .dropdown-menu {
+				display: block;
+				opacity: 1;
+				margin-top: 0;
+			}
+		}
+
+		}
+
+		.dropdown-menu-admin .dropdown-item-admin:hover {
+			background-color: #f8f9fa;
+			transform: translateX(5px);
+			transition: all 0.2s ease;
+		}
+
+		.dropdown-menu-profile {
+			min-width: 220px;
+		}
+
+		.dropdown-item-profile:hover {
+			background-color: #f8f9fa;
+			transform: translateX(3px);
+			transition: all 0.2s ease;
+		}
+
+		.ushop-navbar-001 {
+			background: linear-gradient(135deg, #ff4757 0%, #ff3838 50%, #c44569 100%);
+			padding: 0;
+			box-shadow: 0 6px 25px rgba(255, 71, 87, 0.4);
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+			backdrop-filter: blur(10px);
+		}
+
+		.ushop-nav-container-002 {
+			max-width: 1400px;
+			margin: 0 auto;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 15px 20px;
+			min-height: 70px;
+		}
+
+		.ushop-logo-003 {
+			font-size: 32px;
+			font-weight: 900;
+			color: white;
+			text-decoration: none;
+			letter-spacing: 2px;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		}
+
+			.ushop-logo-003 i {
+				margin-right: 10px;
+				font-size: 28px;
+			}
+
+			.ushop-logo-003 span {
+				color: #ffd700;
+				text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+			}
+
+			.ushop-logo-003:hover {
+				transform: scale(1.05);
+				color: #ffd700;
+			}
+
+				.ushop-logo-003:hover span {
+					color: #ffffff;
+					text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+				}
+
+		.ushop-nav-links-005 {
+			display: flex;
+			list-style: none;
+			gap: 8px;
+			align-items: center;
+			margin: 0;
+			padding: 0;
+		}
+
+		.ushop-nav-link-006 {
+			color: white;
+			text-decoration: none;
+			font-weight: 600;
+			transition: all 0.3s ease;
+			padding: 12px 20px;
+			border-radius: 25px;
+			position: relative;
+			overflow: hidden;
+			font-size: 15px;
+			display: flex;
+			align-items: center;
+		}
+
+			.ushop-nav-link-006 i {
+				margin-right: 8px;
+				font-size: 16px;
+			}
+
+			.ushop-nav-link-006::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+				transition: left 0.5s ease;
+			}
+
+			.ushop-nav-link-006:hover::before {
+				left: 100%;
+			}
+
+			.ushop-nav-link-006:hover {
+				background: rgba(255, 255, 255, 0.25);
+				transform: translateY(-3px);
+				box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+			}
+
+			.ushop-nav-link-006.ushop-active-007 {
+				background: rgba(255, 255, 255, 0.3);
+				box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+			}
+
+		.ushop-search-container-008 {
+			display: flex;
+			align-items: center;
+			background: white;
+			border-radius: 30px;
+			padding: 8px 20px;
+			margin: 0 20px;
+			flex-grow: 1;
+			max-width: 450px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+			border: 2px solid transparent;
+			transition: all 0.3s ease;
+		}
+
+			.ushop-search-container-008:focus-within {
+				border-color: #ffd700;
+				box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+				transform: translateY(-2px);
+			}
+
+			.ushop-search-container-008 input {
+				border: none;
+				outline: none;
+				flex-grow: 1;
+				padding: 10px;
+				font-size: 16px;
+				background: transparent;
+				width: 100%;
+			}
+
+				.ushop-search-container-008 input::placeholder {
+					color: #999;
+				}
+
+		.ushop-search-btn-009 {
+			background: linear-gradient(135deg, #ff4757, #ff3838);
+			border: none;
+			color: white;
+			padding: 10px 18px;
+			border-radius: 25px;
+			cursor: pointer;
+			margin-left: 60px;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 16px;
+			font-weight: bold;
+			box-shadow: 0 3px 10px rgba(255, 71, 87, 0.3);
+		}
+
+			.ushop-search-btn-009:hover {
+				background: linear-gradient(135deg, #ff3838, #c44569);
+				transform: scale(1.05);
+				box-shadow: 0 5px 15px rgba(255, 71, 87, 0.5);
+			}
+
+			.ushop-search-btn-009:active {
+				transform: scale(0.95);
+			}
+
+		.ushop-nav-icons-010 {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.ushop-icon-button-011 {
+			color: white;
+			text-decoration: none;
+			position: relative;
+			padding: 12px;
+			border-radius: 50%;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			font-size: 18px;
+			background: rgba(255, 255, 255, 0.1);
+		}
+
+			.ushop-icon-button-011:hover {
+				background: rgba(255, 255, 255, 0.25);
+				transform: scale(1.1) translateY(-2px);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+			}
+
+			.ushop-icon-button-011:active {
+				transform: scale(1);
+			}
+
+		.ushop-cart-count-013, .ushop-wishlist-count-012 {
+			position: absolute;
+			top: -3px;
+			right: -3px;
+			background: linear-gradient(135deg, #ffd700, #ffb600);
+			color: #333;
+			border-radius: 50%;
+			width: 22px;
+			height: 22px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 11px;
+			font-weight: bold;
+			border: 2px solid white;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+			animation: pulse 2s infinite;
+		}
+
+		@@keyframes pulse {
+			0%, 100% {
+				transform: scale(1);
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+			}
+
+			50% {
+				transform: scale(1.1);
+				box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+			}
+		}
+
+		.ushop-user-menu-014 {
+			position: relative;
+			display: inline-block;
+		}
+
+		.ushop-user-btn-015 {
+			background: rgba(255, 255, 255, 0.2);
+			border: 2px solid rgba(255, 255, 255, 0.3);
+			color: white;
+			padding: 10px 20px;
+			border-radius: 25px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-weight: 600;
+			font-size: 14px;
+			backdrop-filter: blur(5px);
+		}
+
+			.ushop-user-btn-015:hover {
+				background: rgba(255, 255, 255, 0.3);
+				border-color: #ffd700;
+				transform: translateY(-2px);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+			}
+
+			.ushop-user-btn-015:active {
+				transform: translateY(0);
+			}
+
+		/* Dropdown Menu */
+		.ushop-dropdown-content-016 {
+			display: none;
+			position: absolute;
+			right: 0;
+			top: 100%;
+			background-color: white;
+			min-width: 220px;
+			box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+			border-radius: 12px;
+			z-index: 1001;
+			margin-top: 15px;
+			opacity: 0;
+			transform: translateY(-10px) scale(0.95);
+			transition: all 0.3s ease;
+			overflow: hidden;
+		}
+
+			.ushop-dropdown-content-016.show {
+				display: block;
+				opacity: 1;
+				transform: translateY(0) scale(1);
+				animation: dropdownAppear 0.4s ease;
+			}
+
+			.ushop-dropdown-content-016 a {
+				color: #333;
+				padding: 14px 20px;
+				text-decoration: none;
+				display: flex;
+				align-items: center;
+				transition: all 0.2s ease;
+				border-bottom: 1px solid #f1f1f1;
+				font-weight: 500;
+			}
+
+				.ushop-dropdown-content-016 a:hover {
+					background-color: #ffefef;
+					padding-left: 25px;
+					color: #ff4757;
+				}
+
+				.ushop-dropdown-content-016 a:last-child {
+					border-bottom: none;
+					color: #ff3838;
+				}
+
+				.ushop-dropdown-content-016 a i {
+					margin-right: 12px;
+					width: 20px;
+					text-align: center;
+				}
+
+		@@keyframes dropdownAppear {
+			0% {
+				opacity: 0;
+				transform: translateY(-10px) scale(0.95);
+			}
+
+			100% {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+		}
+
+		/* Mobile Menu Toggle */
+		.ushop-hamburger-004 {
+			display: none;
+			flex-direction: column;
+			justify-content: space-around;
+			width: 30px;
+			height: 25px;
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			padding: 0;
+		}
+
+			.ushop-hamburger-004 span {
+				width: 100%;
+				height: 3px;
+				background-color: white;
+				border-radius: 5px;
+				transition: all 0.3s ease;
+				transform-origin: center;
+			}
+
+		/* Demo Content */
+		.ushop-page-content-017 {
+			max-width: 1200px;
+			margin: 30px auto;
+			padding: 20px;
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+		}
+
+		.ushop-page-title-018 {
+			color: #ff4757;
+			margin-bottom: 20px;
+			padding-bottom: 15px;
+			border-bottom: 3px solid #ffefef;
+			font-size: 2.2em;
+			font-weight: 700;
+		}
+
+		.ushop-sellers-grid-019 {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			gap: 25px;
+			margin-top: 30px;
+		}
+
+		.ushop-seller-card-020 {
+			background: linear-gradient(135deg, #f9f9f9, #ffffff);
+			border-radius: 15px;
+			padding: 25px;
+			text-align: center;
+			transition: all 0.3s ease;
+			border: 2px solid #eee;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+		}
+
+			.ushop-seller-card-020:hover {
+				transform: translateY(-8px);
+				box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+				border-color: #ff4757;
+			}
+
+		.ushop-seller-logo-021 {
+			width: 90px;
+			height: 90px;
+			border-radius: 50%;
+			object-fit: cover;
+			margin-bottom: 20px;
+			border: 3px solid #ff4757;
+			padding: 3px;
+			transition: all 0.3s ease;
+		}
+
+		.ushop-seller-card-020:hover .ushop-seller-logo-021 {
+			transform: scale(1.1);
+			border-color: #ffd700;
+		}
+
+		.ushop-seller-name-022 {
+			font-weight: bold;
+			color: #333;
+			margin-bottom: 8px;
+			font-size: 1.2em;
+		}
+
+		.ushop-seller-desc-023 {
+			color: #666;
+			font-size: 0.95em;
+			line-height: 1.4;
+		}
+
+		/* Responsive Design */
+		@@media (max-width: 1024px) {
+			.ushop-search-container-008 {
+				max-width: 300px;
+			}
+
+			.ushop-nav-links-005 {
+				gap: 5px;
+			}
+
+			.ushop-nav-link-006 {
+				padding: 10px 15px;
+				font-size: 14px;
+			}
+		}
+
+		@@media (max-width: 768px) {
+			.ushop-hamburger-004 {
+				display: flex;
+			}
+
+			.ushop-nav-links-005 {
+				display: none;
+				width: 100%;
+				flex-direction: column;
+				gap: 15px;
+				margin-top: 20px;
+				background: rgba(255, 71, 87, 0.95);
+				padding: 20px;
+				border-radius: 15px;
+				backdrop-filter: blur(10px);
+			}
+
+				.ushop-nav-links-005.active {
+					display: flex;
+					animation: slideIn 0.5s ease;
+				}
+
+			.ushop-search-container-008 {
+				margin: 15px 0;
+				width: 100%;
+				order: 3;
+			}
+
+			.ushop-nav-container-002 {
+				flex-wrap: wrap;
+			}
+
+			.ushop-hamburger-004.active span:nth-child(1) {
+				transform: rotate(45deg) translate(6px, 6px);
+			}
+
+			.ushop-hamburger-004.active span:nth-child(2) {
+				opacity: 0;
+			}
+
+			.ushop-hamburger-004.active span:nth-child(3) {
+				transform: rotate(-45deg) translate(6px, -6px);
+			}
+
+			.ushop-dropdown-content-016 {
+				right: -20px;
+				min-width: 200px;
+			}
+
+			.ushop-sellers-grid-019 {
+				grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+				gap: 20px;
+			}
+		}
+
+		@@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateY(-20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@@media (max-width: 480px) {
+			.ushop-nav-container-002 {
+				padding: 10px 15px;
+			}
+
+			.ushop-logo-003 {
+				font-size: 24px;
+			}
+
+			.ushop-nav-icons-010 {
+				gap: 10px;
+			}
+
+			.ushop-user-btn-015 {
+				padding: 8px 15px;
+				font-size: 13px;
+			}
+
+			.ushop-sellers-grid-019 {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
 
 	@await RenderSectionAsync("Scripts", required: false)
 </body>

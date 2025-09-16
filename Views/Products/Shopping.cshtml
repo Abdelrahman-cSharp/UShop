@@ -1,84 +1,68 @@
-﻿@model List<UShop.Models.Product>
-
-@{
-    ViewData["Title"] = "Shopping";
-
-    // Categories from ViewBag (defensive)
-    var categories = (ViewBag.Categories as List<UShop.Models.Category>) ?? new List<UShop.Models.Category>();
-
-    // Parse selectedCategoryId safely (ViewBag might contain string, int or null)
-    int? selectedCategoryId = null;
-    if (ViewBag.SelectedCategoryId != null)
-    {
-        int parsed;
-        if (int.TryParse(ViewBag.SelectedCategoryId.ToString(), out parsed))
-        {
-            selectedCategoryId = parsed;
-        }
-    }
-
-    // Search string from ViewBag (default to empty string)
-    var searchString = (ViewBag.SearchString as string) ?? string.Empty;
-}
-
-<div class="container mt-5">
-    <h2 class="text-center mb-4 fw-bold text-primary">🛍️ All Products</h2>
-
-    <!-- 🔎 Search bar + Category filter -->
-    <form asp-controller="Products" asp-action="All" method="get" class="row mb-4">
-        <div class="col-md-6">
-            <input type="text" name="searchString" value="@searchString"
-                   class="form-control" placeholder="Search product by name..." />
-        </div>
-        <div class="col-md-3">
-            <select name="categoryId" class="form-select">
-                <option value="">-- All Categories --</option>
-                @foreach (var cat in categories)
-                {
-                    if (selectedCategoryId.HasValue && selectedCategoryId.Value == cat.Id)
-                    {
-                        <option value="@cat.Id" selected="selected">@cat.Name</option>
-                    }
-                    else
-                    {
-                        <option value="@cat.Id">@cat.Name</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary fw-bold flex-fill">Filter</button>
-
-            <!-- Reset button (clears filters and shows all products) -->
-            <a asp-controller="Products" asp-action="All"
-               class="btn btn-secondary fw-bold flex-fill">
-                Reset
-            </a>
-        </div>
-    </form>
-
-    <!-- Products list -->
-    <div class="row">
-        @foreach (var product in Model)
-        {
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 border-0 shadow-lg">
-                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/default.jpg" : product.ImageUrl)"
-                         class="card-img-top"
-                         alt="@product.Name"
-                         style="max-height:200px; object-fit:cover;" />
-
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">@product.Name</h5>
-                        <p class="text-muted">@product.Category?.Name</p>
-                        <p class="fw-bold text-success">$@product.Price</p>
-                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id"
-                           class="btn btn-primary btn-sm fw-bold">
-                            View Details
-                        </a>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
+﻿@model IEnumerable<Product>
+<!-- Products Grid -->
+<div class="products-grid">
+	@if (Model.Any())
+	{
+		@foreach (var product in Model)
+		{
+			<div class="product-card-wrapper">
+				@await Html.PartialAsync("_ProductCard", product)
+			</div>
+		}
+	}
+	else
+	{
+		<div class="no-products">
+			<i class="fas fa-exclamation-circle"></i> No products found for your search.
+		</div>
+	}
 </div>
+
+<style>
+	/* Main grid container */
+	.products-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 24px;
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 20px;
+	}
+
+	/* Individual card wrapper */
+	.product-card-wrapper {
+		display: flex;
+		width: 100%;
+	}
+
+	/* No products message */
+	.no-products {
+		grid-column: 1 / -1; /* Span across all columns */
+		text-align: center;
+		padding: 1rem;
+		color: #6b7280;
+		font-size: 1.1rem;
+	}
+
+		.no-products i {
+			font-size: 3rem;
+			margin-bottom: 1rem;
+			display: block;
+			color: #d1d5db;
+		}
+
+	/* Responsive design */
+	@@media (max-width: 768px) {
+		.products-grid {
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			gap: 16px;
+			padding: 10px;
+		}
+	}
+
+	@@media (max-width: 480px) {
+		.products-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
